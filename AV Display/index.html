@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northern Ontario Ijtima – Live Display</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Montserrat:wght@300;400;600;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#071812;--bg2:#0c2318;--gm:#1a5c38;
+  --teal:#3bbfbf;--tl:#7dd8d8;
+  --gold:#c8a84b;--gl:#e2c97e;--gp:#f5e6b8;
+  --w:#fff;--w9:rgba(255,255,255,.92);--w7:rgba(255,255,255,.70);
+  --w4:rgba(255,255,255,.40);--w2:rgba(255,255,255,.20);--w08:rgba(255,255,255,.08);
+}
+html,body{width:100vw;height:100vh;overflow:hidden;font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--w);}
+#bgBase{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 110% 70% at 50% -5%,rgba(26,92,56,.60) 0%,transparent 56%),radial-gradient(ellipse 55% 85% at 0% 58%,rgba(7,30,18,.82) 0%,transparent 50%),radial-gradient(ellipse 45% 60% at 100% 78%,rgba(59,191,191,.08) 0%,transparent 46%),linear-gradient(158deg,#071812 0%,#0c2318 38%,#0f2c1e 62%,#071812 100%);}
+#bgHex{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.055;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='127'%3E%3Cpolygon points='55,6 104,30 104,78 55,102 6,78 6,30' fill='none' stroke='white' stroke-width='1'/%3E%3Cpolygon points='55,20 90,38 90,74 55,92 20,74 20,38' fill='none' stroke='white' stroke-width='.5'/%3E%3C/svg%3E");background-size:110px 127px;}
+#bgPhoto{position:fixed;inset:0;z-index:2;pointer-events:none;background-size:cover;background-position:center;opacity:0;transition:opacity 1.5s ease;}
+#bgPhoto.on{opacity:1}
+#bgOv{position:fixed;inset:0;z-index:3;pointer-events:none;background:linear-gradient(158deg,rgba(4,14,9,.80) 0%,rgba(7,22,14,.52) 42%,rgba(4,14,9,.78) 100%);}
+#bgVg{position:fixed;inset:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse 90% 90% at 50% 50%,transparent 36%,rgba(2,8,5,.70) 100%);}
+#app{position:relative;z-index:10;width:100vw;height:100vh;}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity .85s ease;pointer-events:none;}
+.slide.active{opacity:1;pointer-events:all}
+.slide.out{opacity:0}
+.hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:16px 44px 0;gap:16px;}
+.hdr-l{display:flex;align-items:center;gap:12px;flex:1;}
+.hdr-c{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;gap:2px;}
+.hdr-c-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--gl);letter-spacing:.06em;line-height:1;white-space:nowrap;}
+.hdr-c-sub{font-size:.52rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--w4);}
+.hdr-r{display:flex;align-items:center;gap:14px;flex:1;justify-content:flex-end;}
+.logo-wrap{width:58px;height:58px;border-radius:50%;border:1.5px solid rgba(59,191,191,.4);background:rgba(10,30,20,.6);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;animation:lp 4s ease-in-out infinite;}
+.logo-wrap img{width:100%;height:100%;object-fit:contain;padding:3px;}
+.logo-wrap .fb{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--tl);}
+@keyframes lp{0%,100%{box-shadow:0 0 14px rgba(59,191,191,.18)}50%{box-shadow:0 0 26px rgba(59,191,191,.36)}}
+.hdr-ijtema{display:flex;align-items:center;gap:10px;}
+.hdr-ijtema-txt{line-height:1.2;}
+.hdr-ijtema-name{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--gl);letter-spacing:.04em;}
+.hdr-ijtema-sub{font-size:.52rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--w4);}
+.hdr-khuddam{display:flex;align-items:center;gap:10px;}
+.hdr-org{font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--w7);line-height:1.65;}
+.lpill{display:flex;align-items:center;gap:7px;border:1px solid rgba(74,222,128,.35);background:rgba(74,222,128,.08);padding:7px 18px;border-radius:30px;font-size:.64rem;font-weight:800;letter-spacing:.22em;color:rgba(74,222,128,.9);}
+.ldot{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:bl 1.3s ease-in-out infinite;}
+@keyframes bl{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(74,222,128,.6)}60%{opacity:.4;box-shadow:0 0 0 5px rgba(74,222,128,0)}}
+.clk-t{font-family:'Cormorant Garamond',serif;font-size:2.1rem;font-weight:400;color:var(--gl);line-height:1;text-align:right;}
+.clk-d{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--w4);margin-top:3px;text-align:right;}
+.slbl{display:flex;align-items:center;gap:14px;font-size:.68rem;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
+.slbl::before{content:'';width:28px;height:1px;background:var(--gold);flex-shrink:0;}
+.slbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--gold),transparent);opacity:.4;}
+@keyframes up{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* HERO */
+#sh .body{flex:1;display:grid;grid-template-columns:1fr 1px 1fr;padding:28px 52px 44px;align-items:center;min-height:0;}
+#sh .L{padding-right:52px;}
+#sh .D{background:var(--w2);}
+#sh .R{padding-left:52px;}
+.h-ey{display:flex;align-items:center;gap:10px;font-size:.68rem;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+.h-ey::before{content:'';width:22px;height:1px;background:var(--gold);}
+.h-org{font-size:.8rem;font-weight:700;letter-spacing:.14em;color:var(--w7);text-transform:uppercase;margin-bottom:10px;}
+.h-word{font-size:clamp(4rem,8.5vw,8.5rem);font-weight:900;line-height:.88;text-transform:uppercase;letter-spacing:-.02em;color:var(--w);}
+.h-year{font-size:clamp(4.5rem,10.5vw,10.5rem);font-weight:900;line-height:.85;letter-spacing:-.03em;background:linear-gradient(135deg,var(--gold) 0%,var(--gp) 45%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.h-theme{margin-top:22px;padding-top:18px;border-top:1px solid var(--w2);font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--w7);}
+.ay-ar{font-family:'Amiri',serif;font-size:clamp(1.5rem,2.5vw,2.5rem);line-height:1.8;text-align:right;direction:rtl;color:var(--gl);text-shadow:0 2px 24px rgba(200,168,75,.25);margin-bottom:26px;}
+.ay-en{font-family:'Cormorant Garamond',serif;font-size:clamp(1.05rem,1.7vw,1.6rem);font-style:italic;line-height:1.6;color:var(--w9);margin-bottom:14px;}
+.ay-ref{display:flex;align-items:center;gap:10px;font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--w4);}
+.ay-ref::before{content:'';width:16px;height:1px;background:var(--w4);}
+.slide.active .h-ey{animation:up .7s .05s both}.slide.active .h-org{animation:up .7s .12s both}
+.slide.active .h-word{animation:up .7s .18s both}.slide.active .h-year{animation:up .7s .24s both}
+.slide.active .h-theme{animation:fade .9s .5s both}.slide.active .ay-ar{animation:up .7s .28s both}
+.slide.active .ay-en{animation:fade .8s .48s both}.slide.active .ay-ref{animation:fade .8s .62s both}
+
+/* ATTENDANCE */
+#sa .body{flex:1;display:flex;flex-direction:column;gap:16px;padding:18px 52px 44px;}
+.srow{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.scard{padding:24px 20px;border-radius:18px;position:relative;overflow:hidden;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(10px);}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--gold));}
+.sc-lbl{font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--w4);margin-bottom:8px;font-weight:700;}
+.sc-num{font-family:'Cormorant Garamond',serif;font-size:clamp(3rem,5vw,5rem);font-weight:700;line-height:1;background:linear-gradient(135deg,var(--tl),var(--gl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sc-sub{font-size:.66rem;color:var(--gold);margin-top:6px;font-weight:600;}
+.slide.active .scard{animation:rise .6s ease both;}
+.slide.active .scard:nth-child(1){animation-delay:.06s}.slide.active .scard:nth-child(2){animation-delay:.12s}
+.slide.active .scard:nth-child(3){animation-delay:.18s}.slide.active .scard:nth-child(4){animation-delay:.24s}
+.bcard{flex:1;padding:22px 26px;border-radius:18px;display:flex;flex-direction:column;justify-content:center;gap:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);backdrop-filter:blur(10px);}
+.brow{display:flex;align-items:center;gap:16px;}
+.bn{font-size:.9rem;font-weight:700;color:var(--w9);min-width:160px;}
+.bt{flex:1;height:30px;border-radius:15px;background:rgba(255,255,255,.05);overflow:hidden;}
+.bf{height:100%;border-radius:15px;width:0;transition:width 1.5s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;}
+.bf::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);animation:shn 2.4s ease-in-out infinite;}
+@keyframes shn{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+.bv{font-size:.84rem;font-weight:700;color:var(--gl);min-width:76px;text-align:right;}
+.bp{font-size:.68rem;color:var(--w4);min-width:38px;text-align:right;}
+.slide.active .brow{animation:up .5s ease both;}
+.slide.active .brow:nth-child(1){animation-delay:.35s}.slide.active .brow:nth-child(2){animation-delay:.44s}
+.slide.active .brow:nth-child(3){animation-delay:.53s}.slide.active .brow:nth-child(4){animation-delay:.62s}
+
+/* SCHEDULE */
+#ss .body{flex:1;display:flex;flex-direction:column;gap:14px;padding:16px 52px 44px;}
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;flex:1;min-height:0;}
+.vcard{border-radius:18px;display:flex;flex-direction:column;overflow:hidden;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);}
+.vhead{padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.10);display:flex;align-items:center;gap:13px;background:rgba(255,255,255,.04);}
+.vlbl{width:38px;height:38px;border-radius:9px;flex-shrink:0;background:linear-gradient(135deg,var(--gm),var(--teal));display:flex;align-items:center;justify-content:center;font-size:.56rem;font-weight:800;letter-spacing:.05em;color:var(--bg);}
+.vname{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--w);}
+.vloc{font-size:.62rem;color:var(--w4);letter-spacing:.08em;margin-top:1px;}
+.plist{
+  flex:1;overflow:hidden;padding:10px 13px;display:flex;flex-direction:column;gap:7px;
+  position:relative;
+}
+/* Fade mask at bottom so scroll looks clean */
+.plist::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:36px;
+  background:linear-gradient(transparent,rgba(7,24,18,.92));
+  pointer-events:none;z-index:2;
+}
+/* The scrolling inner track */
+.plist-track{
+  display:flex;flex-direction:column;gap:7px;
+  animation:none; /* set by JS */
+}
+@keyframes pscroll{
+  0%   { transform:translateY(0); }
+  100% { transform:translateY(var(--scroll-dist)); }
+}
+.pi{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:10px;border:1px solid transparent;}
+.pi.done{opacity:.35;}.pi.upcoming{background:rgba(255,255,255,.03);}
+.pi.now{background:rgba(59,191,191,.11);border-color:rgba(59,191,191,.38);box-shadow:0 0 14px rgba(59,191,191,.12);}
+.pt{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;color:var(--gold);min-width:64px;flex-shrink:0;}
+.pii{flex:1;}.pn{font-size:.82rem;font-weight:700;color:var(--w);}.pd{font-size:.64rem;color:var(--w4);margin-top:2px;}
+.ntag{font-size:.55rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;background:var(--teal);color:var(--bg);padding:3px 8px;border-radius:5px;flex-shrink:0;animation:bl 1.5s ease-in-out infinite;}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.slide.active .vcard{animation:rise .55s ease both;}
+.slide.active .vcard:nth-child(1){animation-delay:.08s}.slide.active .vcard:nth-child(2){animation-delay:.16s}.slide.active .vcard:nth-child(3){animation-delay:.24s}
+
+/* LEADERBOARD — auto-cycling podium, tight spacing */
+#sl .body{flex:1;display:flex;flex-direction:column;gap:6px;padding:8px 52px 58px;}
+.ctabs{display:flex;gap:8px;flex-shrink:0;}
+.ctab{padding:8px 22px;border-radius:30px;font-size:.7rem;font-weight:700;letter-spacing:.1em;border:1px solid rgba(255,255,255,.15);color:var(--w4);background:transparent;cursor:pointer;transition:all .25s;}
+.ctab.on{background:rgba(200,168,75,.15);border-color:rgba(200,168,75,.5);color:var(--gl);}
+.cpanel{display:none;flex:1;flex-direction:column;gap:4px;min-height:0;}
+.cpanel.on{display:flex;}
+.comp-head{display:flex;align-items:baseline;gap:12px;flex-shrink:0;margin-bottom:0;}
+.comp-big{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--gl);line-height:1;}
+.comp-cat{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--w4);}
+/* Podium: fill remaining space, columns align to bottom */
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:16px;flex:1;min-height:0;align-items:stretch;}
+/* Each column stretches full height, justifies content to center vertically */
+.pod-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.5vh,18px);}
+.pod-chip{padding:5px 22px;border-radius:30px;font-size:.88rem;font-weight:800;letter-spacing:.08em;flex-shrink:0;}
+.r1 .pod-chip{background:linear-gradient(135deg,#b8860b,#ffd700);color:#3a2800;box-shadow:0 0 18px rgba(255,215,0,.35);}
+.r2 .pod-chip{background:linear-gradient(135deg,#607080,#b8ccd8);color:#1a2530;}
+.r3 .pod-chip{background:linear-gradient(135deg,#7b3f00,#cd7f32);color:#fff;}
+/* Photos scale with available space using vmin so they always fill nicely */
+.pod-photo{border-radius:50%;background:rgba(255,255,255,.08);border:3px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;letter-spacing:.05em;color:var(--tl);overflow:hidden;flex-shrink:0;}
+.r1 .pod-photo{width:clamp(110px,14vmin,180px);height:clamp(110px,14vmin,180px);border-color:rgba(255,215,0,.5);box-shadow:0 0 30px rgba(255,215,0,.2);}
+.r2 .pod-photo,.r3 .pod-photo{width:clamp(90px,11vmin,145px);height:clamp(90px,11vmin,145px);}
+.pod-photo img{width:100%;height:100%;object-fit:cover;}
+.pod-name{font-size:clamp(.9rem,1.6vw,1.3rem);font-weight:700;color:var(--w);text-align:center;line-height:1.2;}
+.pod-mj{font-size:clamp(.68rem,1.1vw,.95rem);font-weight:600;text-align:center;}
+.pod-score{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3.5vw,3.2rem);font-weight:700;color:var(--gl);text-align:center;line-height:1;}
+.pod-bar-wrap{width:70%;height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;}
+.pod-bar{height:100%;border-radius:3px;width:0;transition:width 1.4s cubic-bezier(.4,0,.2,1);}
+.slide.active .pod-col{animation:rise .6s ease both;}
+.slide.active .pod-col:nth-child(1){animation-delay:.15s}.slide.active .pod-col:nth-child(2){animation-delay:.05s}.slide.active .pod-col:nth-child(3){animation-delay:.25s}
+
+/* RANKINGS */
+#sr .body{flex:1;display:grid;grid-template-columns:1.5fr 1fr;gap:16px;padding:16px 52px 44px;}
+.rtc{border-radius:18px;overflow:hidden;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);display:flex;flex-direction:column;}
+.rt{width:100%;border-collapse:collapse;}
+.rt thead tr{border-bottom:1px solid rgba(255,255,255,.1);}
+.rt th{padding:14px 18px;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--w4);font-weight:700;text-align:left;}
+.rt td{padding:15px 18px;font-size:.88rem;border-bottom:1px solid rgba(255,255,255,.05);}
+.rt tbody tr:last-child td{border-bottom:none;}
+.rnum{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;line-height:1;}
+.rk1{color:var(--gold);text-shadow:0 0 16px rgba(200,168,75,.4);}.rk2{color:#b8c8d0;}.rk3{color:#b07040;}
+.mjc{display:flex;align-items:center;gap:10px;}.mjb{width:4px;height:32px;border-radius:2px;flex-shrink:0;}.mjn{font-weight:700;font-size:.9rem;}
+.sp{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:.82rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--w9);}
+.sp.hi{background:linear-gradient(135deg,rgba(59,191,191,.18),rgba(200,168,75,.18));border-color:rgba(200,168,75,.45);color:var(--gl);font-family:'Cormorant Garamond',serif;font-size:1.1rem;}
+.cc{border-radius:18px;padding:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);display:flex;flex-direction:column;gap:18px;overflow-y:auto;}
+.ctit{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:8px;}
+.ctit::after{content:'';flex:1;height:1px;background:rgba(200,168,75,.22);}
+.crow{display:flex;align-items:center;gap:8px;}
+.clbl{font-size:.72rem;font-weight:600;color:var(--w7);min-width:118px;}
+.ctrk{flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden;}
+.cfill{height:100%;border-radius:5px;width:0;transition:width 1.5s cubic-bezier(.4,0,.2,1);}
+.cval{font-size:.66rem;color:var(--w4);min-width:30px;text-align:right;}
+.slide.active .rtc{animation:rise .55s .08s ease both;}.slide.active .cc{animation:rise .55s .18s ease both;}
+.slide.active .rt tbody tr{animation:up .4s ease both;}
+.slide.active .rt tbody tr:nth-child(1){animation-delay:.30s}.slide.active .rt tbody tr:nth-child(2){animation-delay:.40s}
+.slide.active .rt tbody tr:nth-child(3){animation-delay:.50s}.slide.active .rt tbody tr:nth-child(4){animation-delay:.60s}
+
+#prog{position:fixed;bottom:0;left:0;right:0;z-index:50;height:2px;background:rgba(255,255,255,.06);}
+#pf{height:100%;width:0%;background:linear-gradient(90deg,var(--teal),var(--gold));}
+#dots{position:fixed;bottom:62px;left:50%;transform:translateX(-50%);z-index:50;display:flex;gap:8px;align-items:center;}
+.dot{width:6px;height:6px;border-radius:3px;background:var(--w4);border:1px solid var(--w4);transition:all .4s ease;cursor:pointer;}
+.dot.on{width:22px;background:var(--gold);border-color:var(--gold);}
+/* ANNOUNCEMENT BANNER */
+#annBanner{
+  position:fixed;bottom:0;left:0;right:0;z-index:49;
+  display:flex;align-items:center;
+  background:linear-gradient(90deg,rgba(4,20,10,.97) 0%,rgba(8,30,18,.97) 40%,rgba(4,20,10,.97) 100%);
+  border-top:1px solid rgba(59,191,191,.3);
+  height:52px;overflow:hidden;
+}
+#annLabel{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:9px;
+  padding:0 20px 0 24px;
+  border-right:1px solid rgba(59,191,191,.25);
+  height:100%;
+  background:linear-gradient(90deg,rgba(59,191,191,.18),rgba(59,191,191,.06));
+}
+#annLabel .dot-pulse{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:bl 1.3s ease-in-out infinite;flex-shrink:0;}
+#annLabel span{font-size:.6rem;font-weight:800;letter-spacing:.28em;text-transform:uppercase;color:var(--tl);white-space:nowrap;}
+#annTrackWrap{flex:1;overflow:hidden;position:relative;}
+#annTrack{
+  white-space:nowrap;display:inline-block;
+  font-size:1rem;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.92);
+  padding-left:40px;
+  animation:stk 35s linear infinite;
+}
+@keyframes stk{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(59,191,191,.3);border-radius:3px;}
+</style>
+</head>
+<body>
+<div id="bgBase"></div><div id="bgHex"></div><div id="bgPhoto"></div><div id="bgOv"></div><div id="bgVg"></div>
+<div id="app">
+
+<!-- SLIDE 1: HERO -->
+<div class="slide active" id="sh">
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="hdr-ijtema">
+        <div class="logo-wrap" id="l1_0"><span class="fb">ج</span></div>
+        <div class="hdr-ijtema-txt">
+          <div class="hdr-ijtema-name" id="hdrTitle_0">IJTEMA 2025</div>
+          <div class="hdr-ijtema-sub">Northern Ontario Ijtima</div>
+        </div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <div class="lpill"><div class="ldot"></div>LIVE</div>
+      <div><div class="clk-t" id="c0t"></div><div class="clk-d" id="c0d"></div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="L">
+      <div class="h-org">Majlis Khuddamul Ahmadiyya – Northern Ontario</div>
+      <div class="h-word">IJTIMA</div>
+      <div class="h-year" id="hYear"></div>
+      <div class="h-theme" id="hTheme"></div>
+    </div>
+    <div class="D"></div>
+    <div class="R">
+      <div class="ay-ar" id="hAyAr"></div>
+      <div class="ay-en" id="hAyEn"></div>
+      <div class="ay-ref" id="hAyRef"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: ATTENDANCE -->
+<div class="slide" id="sa">
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="hdr-ijtema">
+        <div class="logo-wrap" id="l1_1"><span class="fb">ج</span></div>
+        <div class="hdr-ijtema-txt">
+          <div class="hdr-ijtema-name" id="hdrTitle_1">IJTEMA 2025</div>
+          <div class="hdr-ijtema-sub">Northern Ontario Ijtima</div>
+        </div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <div class="lpill"><div class="ldot"></div>LIVE</div>
+      <div><div class="clk-t" id="c1t"></div><div class="clk-d" id="c1d"></div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="slbl">Attendance &amp; Registration</div>
+    <div class="srow" id="srow"></div>
+    <div class="bcard" id="bcard"></div>
+  </div>
+</div>
+
+<!-- SLIDE 3: SCHEDULE -->
+<div class="slide" id="ss">
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="hdr-ijtema">
+        <div class="logo-wrap" id="l1_2"><span class="fb">ج</span></div>
+        <div class="hdr-ijtema-txt">
+          <div class="hdr-ijtema-name" id="hdrTitle_2">IJTEMA 2025</div>
+          <div class="hdr-ijtema-sub">Northern Ontario Ijtima</div>
+        </div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <div class="lpill"><div class="ldot"></div>LIVE</div>
+      <div><div class="clk-t" id="c2t"></div><div class="clk-d" id="c2d"></div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="slbl">Live Program Schedule</div>
+    <div class="vgrid" id="vgrid"></div>
+  </div>
+</div>
+
+<!-- SLIDE 4: LEADERBOARD -->
+<div class="slide" id="sl">
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="hdr-ijtema">
+        <div class="logo-wrap" id="l1_3"><span class="fb">ج</span></div>
+        <div class="hdr-ijtema-txt">
+          <div class="hdr-ijtema-name" id="hdrTitle_3">IJTEMA 2025</div>
+          <div class="hdr-ijtema-sub">Northern Ontario Ijtima</div>
+        </div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <div class="lpill"><div class="ldot"></div>LIVE</div>
+      <div><div class="clk-t" id="c3t"></div><div class="clk-d" id="c3d"></div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div class="slbl" style="flex:1">Competition Leaderboard</div>
+      <div id="compIndicator" style="display:flex;align-items:center;gap:6px;padding-left:20px"></div>
+    </div>
+    <div id="cpanels" style="flex:1;display:flex;flex-direction:column;min-height:0"></div>
+  </div>
+</div>
+
+<!-- SLIDE 5: RANKINGS -->
+<div class="slide" id="sr">
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="hdr-ijtema">
+        <div class="logo-wrap" id="l1_4"><span class="fb">ج</span></div>
+        <div class="hdr-ijtema-txt">
+          <div class="hdr-ijtema-name" id="hdrTitle_4">IJTEMA 2025</div>
+          <div class="hdr-ijtema-sub">Northern Ontario Ijtima</div>
+        </div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <div class="lpill"><div class="ldot"></div>LIVE</div>
+      <div><div class="clk-t" id="c4t"></div><div class="clk-d" id="c4d"></div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="slbl" style="grid-column:span 2">Majlis Rankings</div>
+    <div class="rtc"><div id="ranktrack"><table class="rt"><thead><tr><th>Rank</th><th>Majlis</th><th>Attendance</th><th>Education</th><th>Sports</th><th>Total</th></tr></thead><tbody id="rbody"></tbody></table></div></div>
+    <div class="cc" id="cc"></div>
+  </div>
+</div>
+
+</div>
+<div id="prog"><div id="pf"></div></div>
+<div id="dots"></div>
+<div id="annBanner">
+  <div id="annLabel"><div class="dot-pulse"></div><span>Announcement</span></div>
+  <div id="annTrackWrap"><div id="annTrack"></div></div>
+</div>
+
+<script>
+let D=getEmptyData();
+const CLKS=[['c0t','c0d'],['c1t','c1d'],['c2t','c2d'],['c3t','c3d'],['c4t','c4d']];
+function tick(){const n=new Date();const t=n.toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});const d=n.toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric',year:'numeric'});CLKS.forEach(([ti,di])=>{const te=document.getElementById(ti),de=document.getElementById(di);if(te)te.textContent=t;if(de)de.textContent=d;});}
+setInterval(tick,1000);tick();
+
+function applyLogos(){
+  const u1 = resolveLogoUrl(D.meta.logo1||'');
+  const year = (D.meta.title||'').match(/\d{4}/)?.[0]||'2026';
+
+  for(let i=0;i<5;i++){
+    const ttl=document.getElementById('hdrTitle_'+i);
+    if(ttl) ttl.textContent='IJTIMA '+year;
+
+    const l1=document.getElementById('l1_'+i);
+    if(l1){
+      if(u1){
+        let img=l1.querySelector('img');
+        if(!img){ l1.innerHTML=''; img=document.createElement('img'); l1.appendChild(img); }
+        img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%';
+        img.alt='Northern Ontario Logo';
+        l1.style.background='transparent';
+        img.onerror=function(){ this.parentNode.innerHTML='<span class="fb">خ</span>'; };
+        if(img.src !== u1) img.src=u1;
+      } else {
+        if(!l1.querySelector('.fb')) l1.innerHTML='<span class="fb">خ</span>';
+      }
+    }
+  }
+}
+
+function applyBg(){
+  const url = resolveBgUrl(D.meta);
+  const el  = document.getElementById('bgPhoto');
+  if(!url){ el.classList.remove('on'); el.style.backgroundImage=''; return; }
+
+  // Use a real <img> element — this respects CORS cookies better than new Image()
+  let probe = document.getElementById('bgProbe');
+  if(!probe){
+    probe = document.createElement('img');
+    probe.id = 'bgProbe';
+    probe.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:-10px;left:-10px';
+    document.body.appendChild(probe);
+  }
+  probe.onload  = () => { el.style.backgroundImage = "url('"+url+"')"; el.classList.add('on'); };
+  probe.onerror = () => { el.classList.remove('on'); el.style.backgroundImage=''; console.warn('[BG] Failed to load:', url); };
+  probe.src = url;
+}
+
+function fmt(t){if(!t)return '';if(/[ap]m$/i.test(t.trim()))return t.trim();if(!t.includes(':'))return t;const[h,m]=t.split(':').map(Number);return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;}
+
+function animNums(){document.querySelectorAll('.sc-num[data-t]').forEach(el=>{const tgt=parseInt(el.dataset.t),dur=1100,s=Date.now();const r=()=>{const p=Math.min((Date.now()-s)/dur,1);el.textContent=Math.round((1-Math.pow(1-p,3))*tgt);if(p<1)requestAnimationFrame(r);};r();});}
+function animBars(){requestAnimationFrame(()=>requestAnimationFrame(()=>{document.querySelectorAll('[data-w]').forEach(el=>{el.style.width=el.dataset.w+'%';});}));}
+
+function rHero(){
+  const m=D.meta;
+  const year=(m.title||'').match(/\d{4}/)?.[0]||'2025';
+  setText('hYear', year);
+  setText('hTheme', m.theme ? '"'+m.theme+'"' : '"Love for All, Hatred for None"');
+  setText('hAyAr',  m.ayah_arabic  || 'قُلْ إِنِّي أُمِرْتُ أَنْ أَعْبُدَ اللَّهَ مُخْلِصًا لَّهُ الدِّينَ');
+  setText('hAyEn',  m.ayah_english || 'Say, "Verily I am commanded to worship Allah, being sincere to Him in religion."');
+  setText('hAyRef', m.ayah_ref     || 'Surah Az-Zumar, Chapter 39, Verse 12');
+}
+function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+
+function rAttend(){
+  const totR=D.majalis.reduce((a,m)=>a+m.registered,0),totP=D.majalis.reduce((a,m)=>a+m.present,0);
+  const pct=totR?Math.round(totP/totR*100):0,totE=D.competitions.reduce((a,c)=>a+c.entries.length,0);
+  document.getElementById('srow').innerHTML=[{l:'Total Tajnid',v:totR,s:`${D.majalis.length} Majalis`},{l:'Present Today',v:totP,s:`${pct}% attendance`},{l:'Competition Entries',v:totE,s:`${D.competitions.length} events`}].map(x=>`<div class="scard"><div class="sc-lbl">${x.l}</div><div class="sc-num" data-t="${x.v}">0</div><div class="sc-sub">${x.s}</div></div>`).join('');
+  const mx=Math.max(...D.majalis.map(m=>m.registered),1);
+  const rows=D.majalis.map(m=>`<div class="brow"><div class="bn">${m.name}</div><div class="bt"><div class="bf" data-w="${Math.round(m.registered/mx*100)}" style="background:linear-gradient(90deg,${m.color}77,${m.color})"></div></div><div class="bv">${m.present}/${m.registered}</div><div class="bp">${m.registered?Math.round(m.present/m.registered*100):0}%</div></div>`).join('');
+  const bc=document.getElementById('bcard');
+  bc.innerHTML=`<div id="atttrack" style="display:flex;flex-direction:column;gap:16px">${rows}</div>`;
+  bc.style.justifyContent='flex-start';
+}
+
+function rSchedule(){
+  document.getElementById('vgrid').innerHTML=D.venues.map(v=>{
+    const short=v.name.split(' ').map(w=>w[0]).join('').slice(0,3).toUpperCase();
+    const items=v.programs.map(p=>`<div class="pi ${p.status}"><div class="pt">${fmt(p.time)}</div><div class="pii"><div class="pn">${p.name}</div><div class="pd">${p.detail}</div></div>${p.status==='now'?'<div class="ntag">NOW</div>':`<div class="sdot" style="background:${p.status==='done'?'rgba(255,255,255,.2)':'rgba(200,168,75,.4)'}"></div>`}</div>`).join('');
+    return `<div class="vcard"><div class="vhead"><div class="vlbl">${short}</div><div><div class="vname">${v.name}</div><div class="vloc">${v.location}</div></div></div><div class="plist" id="pl_${v.id}"><div class="plist-track" id="pt_${v.id}">${items}</div></div></div>`;
+  }).join('');
+  // After render, start scroll on any list that overflows
+  requestAnimationFrame(()=>requestAnimationFrame(()=>initScheduleScroll()));
+}
+
+function initScheduleScroll(){
+  D.venues.forEach(v=>{
+    const list=document.getElementById('pl_'+v.id);
+    const track=document.getElementById('pt_'+v.id);
+    if(!list||!track)return;
+    const listH=list.clientHeight;
+    const trackH=track.scrollHeight;
+    if(trackH<=listH){
+      // Fits — no scroll needed, remove any animation
+      track.style.animation='none';
+      return;
+    }
+    // Needs to scroll: distance = trackH - listH + small buffer
+    const dist=trackH-listH+20;
+    // Speed: 30px per second feels comfortable on a TV
+    const dur=Math.round(dist/28);
+    // Pause 1.5s at top, scroll down, pause 1.5s, snap back, repeat
+    track.style.setProperty('--scroll-dist',`-${dist}px`);
+    track.style.animation=`pscroll ${dur}s 1.5s ease-in-out infinite alternate`;
+  });
+}
+
+function initListScroll(listEl,trackEl){
+  if(!listEl||!trackEl)return;
+  listEl.style.overflow='hidden';
+  listEl.style.position='relative';
+  const listH=listEl.clientHeight;
+  const trackH=trackEl.scrollHeight;
+  trackEl.style.animation='none';
+  if(trackH<=listH+10)return;
+  const dist=trackH-listH+20;
+  const dur=Math.max(8,Math.round(dist/28));
+  trackEl.style.setProperty('--scroll-dist',`-${dist}px`);
+  trackEl.style.animation=`pscroll ${dur}s 2s ease-in-out infinite alternate`;
+}
+
+// ── LEADERBOARD auto-cycler ──────────────────────────
+let acIdx=0, compCycleTimer=null;
+const COMP_DUR=5000; // 5s per competition
+
+function rLeaders(){
+  buildPanels();
+  startCompCycle();
+}
+
+function buildPanels(){
+  document.getElementById('cpanels').innerHTML=D.competitions.map((c,i)=>{
+    const s=[...c.entries].sort((a,b)=>b.score-a.score).slice(0,3);
+    const order=[s[1],s[0],s[2]],cls=['r2','r1','r3'],labels=['2nd','1st','3rd'];
+    return `<div class="cpanel${i===acIdx?' on':''}" id="cp${i}" style="opacity:0;transition:opacity .5s ease">
+      <div class="comp-head"><div class="comp-big">${c.name}</div><div class="comp-cat">${c.category}</div></div>
+      <div class="podium">${order.map((e,pi)=>{
+        if(!e)return `<div class="pod-col ${cls[pi]}"><div class="pod-chip">${labels[pi]}</div><div class="pod-photo" style="width:${pi===1?'110px':'88px'};height:${pi===1?'110px':'88px'}">TBD</div></div>`;
+        const mj=D.majalis.find(x=>x.id===e.majlis)||{name:e.majlis,color:'#3bbfbf'};
+        const mx=s[0]?.score||1;
+        const ini=e.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+        return `<div class="pod-col ${cls[pi]}"><div class="pod-chip">${labels[pi]}</div><div class="pod-photo" style="width:${pi===1?'110px':'88px'};height:${pi===1?'110px':'88px'}">${e.photo?`<img src="${e.photo}" alt="${e.name}" onerror="this.parentNode.textContent='${ini}'">`:`<span>${ini}</span>`}</div><div class="pod-name">${e.name}</div><div class="pod-mj" style="color:${mj.color}">${mj.name}</div><div class="pod-score">${e.score}</div><div class="pod-bar-wrap"><div class="pod-bar" data-w="${Math.round(e.score/mx*100)}" style="background:${mj.color}"></div></div></div>`;
+      }).join('')}</div>
+    </div>`;
+  }).join('');
+  // Fade in active panel
+  const active=document.getElementById('cp'+acIdx);
+  if(active) requestAnimationFrame(()=>requestAnimationFrame(()=>{active.style.opacity='1';}));
+  // Update dot indicators
+  const ind=document.getElementById('compIndicator');
+  if(ind){
+    ind.innerHTML=D.competitions.map((_,i)=>`<div style="width:${i===acIdx?'18px':'6px'};height:6px;border-radius:3px;background:${i===acIdx?'var(--gold)':'rgba(255,255,255,.2)'};transition:all .4s ease"></div>`).join('');
+  }
+  setTimeout(animBars,120);
+}
+
+function startCompCycle(){
+  clearInterval(compCycleTimer);
+  if(D.competitions.length<=1)return;
+  compCycleTimer=setInterval(()=>{
+    // Fade out current
+    const cur=document.getElementById('cp'+acIdx);
+    if(cur)cur.style.opacity='0';
+    setTimeout(()=>{
+      cur && cur.classList.remove('on');
+      acIdx=(acIdx+1)%D.competitions.length;
+      document.querySelectorAll('.cpanel').forEach((p,pi)=>p.classList.toggle('on',pi===acIdx));
+      buildPanels();
+    },500);
+  },COMP_DUR);
+}
+
+function stopCompCycle(){ clearInterval(compCycleTimer); }
+
+function rRankings(){
+  const R=D.majlisRankings;
+  if(!R||!R.length){
+    document.getElementById('rbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:rgba(255,255,255,.4)">Waiting for data…</td></tr>';
+    document.getElementById('cc').innerHTML='';
+    return;
+  }
+  const RN=['rk1','rk2','rk3',''],POS=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th','13th','14th','15th','16th'];
+  document.getElementById('rbody').innerHTML=R.map((r,i)=>`<tr><td><span class="rnum ${RN[i]||''}">${POS[i]||i+1}</span></td><td><div class="mjc"><div class="mjb" style="background:${r.color}"></div><span class="mjn">${r.majlis}</span></div></td><td><span class="sp">${r.attendance}%</span></td><td><span class="sp">${r.education}</span></td><td><span class="sp">${r.sports}</span></td><td><span class="sp hi">${r.total}</span></td></tr>`).join('');
+  const top=R.slice(0,5);
+  const CRITS=[{l:'Attendance %',k:'attendance',u:'%'},{l:'Education Pts',k:'education',u:''},{l:'Sports Pts',k:'sports',u:''}];
+  document.getElementById('cc').innerHTML=`<div class="slbl" style="font-size:.56rem">Top 5 Breakdown</div>`+CRITS.map(cr=>{const mx=Math.max(...top.map(r=>r[cr.k]||0),1);return `<div><div class="ctit">${cr.l}</div><div style="display:flex;flex-direction:column;gap:5px">${top.map(r=>`<div class="crow"><span class="clbl">${r.majlis}</span><div class="ctrk"><div class="cfill" data-w="${Math.round(((r[cr.k]||0)/mx)*100)}" style="background:${r.color}"></div></div><span class="cval">${r[cr.k]||0}${cr.u}</span></div>`).join('')}</div></div>`;}).join('');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    initListScroll(document.querySelector('.rtc'),document.getElementById('ranktrack'));
+  }));
+}
+
+function rTicker(){
+  const msgs=(D.announcements||[]);
+  const el=document.getElementById('annTrack');
+  if(!el)return;
+  if(msgs.length===0){el.textContent='Welcome to Northern Ontario Ijtima 2026';return;}
+  el.textContent=msgs.join('          |          ');
+  // Adjust speed based on text length — longer = slower
+  const speed=Math.max(25,Math.min(55,msgs.join('').length*0.3));
+  el.style.animationDuration=speed+'s';
+}
+
+const IDS=['sh','sa','ss','sl','sr'],DUR=15000;
+let cur=0,timer=null;
+function buildDots(){document.getElementById('dots').innerHTML=IDS.map((_,i)=>`<div class="dot${i===0?' on':''}" onclick="goTo(${i})"></div>`).join('');}
+function goTo(idx){
+  const prev=document.getElementById(IDS[cur]);prev.classList.remove('active');prev.classList.add('out');setTimeout(()=>prev.classList.remove('out'),900);
+  cur=idx;applyBg();applyLogos();
+  if(idx===0)rHero();
+  if(idx===1){rAttend();setTimeout(()=>{animNums();animBars();requestAnimationFrame(()=>requestAnimationFrame(()=>initListScroll(document.getElementById('bcard'),document.getElementById('atttrack'))));},150);}
+  if(idx===2){rSchedule();setTimeout(initScheduleScroll,400);}if(idx===3){rLeaders();setTimeout(animBars,150);}if(idx===4){rRankings();setTimeout(animBars,150);}
+  rTicker();document.getElementById(IDS[idx]).classList.add('active');
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i===idx));startProg();
+}
+function next(){
+  // Stop comp cycle when leaving leaderboard
+  if(IDS[cur]==='sl') stopCompCycle();
+  goTo((cur+1)%IDS.length);
+}
+function startProg(){clearTimeout(timer);const pf=document.getElementById('pf');pf.style.transition='none';pf.style.width='0%';requestAnimationFrame(()=>requestAnimationFrame(()=>{pf.style.transition=`width ${DUR}ms linear`;pf.style.width='100%';}));timer=setTimeout(next,DUR);}
+document.addEventListener('click',e=>{if(!e.target.closest('#dots'))next();});
+// ── Boot ─────────────────────────────────────────────
+// Render skeleton immediately so the screen is never blank
+rHero();rAttend();rSchedule();rLeaders();rRankings();rTicker();
+applyBg();applyLogos();buildDots();startProg();
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  initScheduleScroll();
+  initListScroll(document.getElementById('bcard'),document.getElementById('atttrack'));
+  initListScroll(document.querySelector('.rtc'),document.getElementById('ranktrack'));
+}));
+
+// Fetch live data from Google Sheets and re-render
+(async function boot(){
+  const remote = await fetchBootstrap();
+  if(remote){
+    D=remote;
+    rHero();rAttend();rSchedule();rLeaders();rRankings();rTicker();
+    applyBg();applyLogos();
+  }
+})();
+
+// ── Poll every 30 s for updates ──────────────────────
+setInterval(async ()=>{
+  const remote = await fetchBootstrap();
+  if(remote){
+    D=remote;
+    applyBg();applyLogos();
+    [rHero,rAttend,rSchedule,rLeaders,rRankings][cur]?.();
+    rTicker();
+  }
+},30000);
+</script>
+</body>
+</html>

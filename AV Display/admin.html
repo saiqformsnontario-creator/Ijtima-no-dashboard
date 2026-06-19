@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ijtema Admin – Northern Ontario</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1f15;--bg2:#122a1c;--bg3:#183524;
+  --teal:#3bbfbf;--td:#278a8a;--tl:#7dd8d8;
+  --gold:#c8a84b;--gl:#e2c97e;
+  --green:#2d8a55;--greenl:#4ade80;
+  --w:#fff;--w8:rgba(255,255,255,.8);--w5:rgba(255,255,255,.5);
+  --w2:rgba(255,255,255,.2);--w08:rgba(255,255,255,.08);
+  --bdr:rgba(59,191,191,.2);
+  --red:#f87171;--redbg:rgba(248,113,113,.12);
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--w);font-family:'Montserrat',sans-serif;font-size:14px;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 60% at 0% 0%,rgba(45,138,85,.15) 0%,transparent 55%),radial-gradient(ellipse 60% 80% at 100% 100%,rgba(59,191,191,.08) 0%,transparent 55%),linear-gradient(160deg,#0d1f15 0%,#0a1810 100%);}
+
+/* TOP BAR */
+.tbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:13px 30px;background:rgba(10,24,16,.96);border-bottom:1px solid var(--bdr);backdrop-filter:blur(12px);}
+.tbar-l{display:flex;align-items:center;gap:13px;}
+.tbar-logo{width:42px;height:42px;border-radius:50%;background:rgba(59,191,191,.12);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;}
+.tbar-logo svg{width:34px;height:34px;}
+.tbar-ttl h1{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--gl);}
+.tbar-ttl p{font-size:.58rem;letter-spacing:.18em;color:var(--w5);text-transform:uppercase;margin-top:1px;}
+.tbar-r{display:flex;align-items:center;gap:11px;}
+.saved{font-size:.62rem;letter-spacing:.12em;color:var(--tl);opacity:0;transition:opacity .4s;}
+.saved.on{opacity:1;}
+
+/* BUTTONS */
+.btn{padding:8px 18px;border:none;border-radius:8px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;}
+.btn-t{background:linear-gradient(135deg,var(--td),var(--teal));color:var(--bg);}
+.btn-t:hover{box-shadow:0 0 16px rgba(59,191,191,.4);transform:translateY(-1px);}
+.btn-g{background:linear-gradient(135deg,#9a7a2a,var(--gold));color:var(--bg);}
+.btn-g:hover{box-shadow:0 0 14px rgba(200,168,75,.4);transform:translateY(-1px);}
+.btn-gh{background:var(--w08);border:1px solid var(--bdr);color:var(--w8);}
+.btn-gh:hover{background:var(--w2);}
+.btn-d{background:var(--redbg);border:1px solid rgba(248,113,113,.3);color:var(--red);}
+.btn-d:hover{background:rgba(248,113,113,.25);}
+.btn-sm{padding:5px 11px;font-size:.6rem;}
+.btn-xs{padding:3px 8px;font-size:.56rem;}
+
+/* LAYOUT */
+.main{position:relative;z-index:1;flex:1;display:grid;grid-template-columns:195px 1fr;min-height:0;}
+
+/* SIDEBAR */
+.sidebar{border-right:1px solid var(--bdr);padding:18px 0;background:rgba(10,24,16,.6);position:sticky;top:55px;height:calc(100vh - 55px);overflow-y:auto;}
+.sb-label{font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:var(--w5);padding:10px 18px 4px;font-weight:700;}
+.sb-btn{display:flex;align-items:center;gap:9px;width:100%;padding:10px 18px;background:transparent;border:none;color:var(--w8);cursor:pointer;font-family:'Montserrat',sans-serif;font-size:.7rem;font-weight:600;text-align:left;transition:all .2s;border-left:3px solid transparent;}
+.sb-btn:hover{background:var(--w08);color:var(--w);}
+.sb-btn.on{background:rgba(59,191,191,.1);border-left-color:var(--teal);color:var(--tl);}
+
+/* CONTENT */
+.content{padding:26px 30px;overflow-y:auto;}
+.sec{display:none;}.sec.on{display:block;}
+.sec-hdr{margin-bottom:22px;}
+.sec-hdr h2{font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-weight:700;color:var(--gl);}
+.sec-hdr p{font-size:.68rem;color:var(--w5);margin-top:4px;letter-spacing:.08em;}
+
+/* CARDS */
+.card{background:var(--w08);border:1px solid var(--bdr);border-radius:14px;padding:20px;margin-bottom:14px;}
+.card-ttl{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--tl);font-weight:700;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.fg label{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--w5);font-weight:700;}
+.fg input,.fg select,.fg textarea{background:rgba(0,0,0,.25);border:1px solid var(--bdr);border-radius:8px;padding:9px 11px;color:var(--w);font-family:'Montserrat',sans-serif;font-size:.76rem;outline:none;transition:border-color .2s;width:100%;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal);}
+.fg select option{background:#122a1c;}
+.fg textarea{resize:vertical;min-height:60px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* LIST ITEMS */
+.li{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:9px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.06);margin-bottom:6px;}
+.li-info{flex:1;min-width:0;}.li-name{font-weight:700;font-size:.78rem;color:var(--w);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.li-sub{font-size:.6rem;color:var(--w5);margin-top:1px;}
+.li-act{display:flex;gap:5px;flex-shrink:0;}
+
+/* TABLE */
+.etbl{width:100%;border-collapse:collapse;margin-top:8px;}
+.etbl th{font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;color:var(--w5);padding:7px 9px;text-align:left;border-bottom:1px solid var(--bdr);}
+.etbl td{padding:9px 9px;font-size:.74rem;border-bottom:1px solid rgba(255,255,255,.04);}
+.etbl tr:hover td{background:rgba(255,255,255,.03);}
+
+/* STATUS SELECT */
+.ssel{background:rgba(0,0,0,.3);border:1px solid var(--bdr);border-radius:6px;padding:4px 7px;color:var(--w);font-family:'Montserrat',sans-serif;font-size:.62rem;cursor:pointer;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:.6rem;font-weight:700;}
+.badge-t{background:rgba(59,191,191,.15);border:1px solid rgba(59,191,191,.3);color:var(--tl);}
+.badge-g{background:rgba(200,168,75,.15);border:1px solid rgba(200,168,75,.3);color:var(--gl);}
+.badge-gr{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:var(--greenl);}
+.badge-r{background:var(--redbg);border:1px solid rgba(248,113,113,.3);color:var(--red);}
+
+/* PHOTO PREVIEW */
+.pph{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--bdr);background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:1.1rem;overflow:hidden;vertical-align:middle;}
+.pph img{width:100%;height:100%;object-fit:cover;}
+
+/* ATTENDANCE TRACKER */
+.att-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.att-stat{background:rgba(0,0,0,.2);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;text-align:center;}
+.att-stat-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--tl);line-height:1;}
+.att-stat-lbl{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--w5);margin-top:4px;font-weight:700;}
+.att-entry-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:10px;}
+.att-list{max-height:280px;overflow-y:auto;}
+.att-item{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:9px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.06);margin-bottom:5px;}
+.att-item.checked{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05);}
+.att-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--bdr);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .2s;}
+.att-check.on{background:var(--greenl);border-color:var(--greenl);color:var(--bg);}
+.att-name{flex:1;font-weight:700;font-size:.78rem;}
+.att-majlis{font-size:.62rem;font-weight:600;}
+.att-time{font-size:.6rem;color:var(--w5);min-width:55px;text-align:right;}
+.att-search{background:rgba(0,0,0,.25);border:1px solid var(--bdr);border-radius:8px;padding:9px 11px;color:var(--w);font-family:'Montserrat',sans-serif;font-size:.76rem;outline:none;width:100%;margin-bottom:10px;}
+.att-search:focus{border-color:var(--teal);}
+.att-filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.att-filter{padding:5px 14px;border-radius:20px;border:1px solid var(--bdr);background:transparent;color:var(--w5);font-family:'Montserrat',sans-serif;font-size:.62rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.att-filter.on{background:rgba(59,191,191,.15);border-color:var(--teal);color:var(--tl);}
+
+/* CONFIRM */
+.conf{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;}
+.conf.on{display:flex;}
+.conf-box{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;padding:26px 30px;max-width:360px;text-align:center;}
+.conf-box h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--w);margin-bottom:9px;}
+.conf-box p{font-size:.73rem;color:var(--w8);margin-bottom:18px;line-height:1.6;}
+.conf-btns{display:flex;gap:9px;justify-content:center;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:200;background:var(--bg3);border:1px solid var(--teal);border-radius:9px;padding:9px 18px;font-size:.73rem;color:var(--tl);font-weight:700;box-shadow:0 0 22px rgba(59,191,191,.25);transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;}
+.toast.on{transform:translateY(0);opacity:1;}
+
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--td);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="tbar">
+  <div class="tbar-l">
+    <div class="tbar-logo"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="#3bbfbf" stroke-width="3.5"/><text x="50" y="66" text-anchor="middle" font-family="serif" font-size="46" fill="#3bbfbf">خ</text></svg></div>
+    <div class="tbar-ttl"><h1>Ijtema Admin Panel</h1><p>Majlis Khuddamul Ahmadiyya – Northern Ontario</p></div>
+  </div>
+  <div class="tbar-r">
+    <span class="saved" id="savedMsg">Saved</span>
+    <button class="btn btn-gh" onclick="doReset()">Reset Defaults</button>
+    <button class="btn btn-t" onclick="window.open('display.html','_blank')">Open Display</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sb-label">Content</div>
+    <button class="sb-btn on" onclick="showSec('meta',this)">Event Info</button>
+    <button class="sb-btn" onclick="showSec('attendance',this)">Attendance</button>
+    <button class="sb-btn" onclick="showSec('members',this)">Member Database</button>
+    <button class="sb-btn" onclick="showSec('schedule',this)">Schedule</button>
+    <button class="sb-btn" onclick="showSec('competitions',this)">Competitions</button>
+    <button class="sb-btn" onclick="showSec('rankings',this)">Rankings</button>
+    <button class="sb-btn" onclick="showSec('majalis',this)">Majalis</button>
+    <div class="sb-label">Display</div>
+    <button class="sb-btn" onclick="showSec('branding',this)">Logos & Background</button>
+    <button class="sb-btn" onclick="showSec('sheets',this)">Google Sheets Sync</button>
+    <button class="sb-btn" onclick="showSec('announce',this)">Announcements</button>
+    <button class="sb-btn" onclick="showSec('info',this)">Setup Guide</button>
+  </div>
+
+  <div class="content">
+
+    <!-- META -->
+    <div class="sec on" id="sec-meta">
+      <div class="sec-hdr"><h2>Event Information</h2><p>Edit the hero slide content</p></div>
+      <div class="card">
+        <div class="card-ttl">Ijtema Details</div>
+        <div class="grid2">
+          <div class="fg"><label>Event Title</label><input id="mTitle" type="text"></div>
+          <div class="fg"><label>Date</label><input id="mDate" type="text"></div>
+          <div class="fg"><label>Location</label><input id="mLoc" type="text"></div>
+          <div class="fg"><label>Theme / Motto</label><input id="mTheme" type="text"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Featured Ayah</div>
+        <div class="fg"><label>Arabic Text</label><textarea id="mAyAr" rows="2" dir="rtl"></textarea></div>
+        <div class="fg"><label>English Translation</label><textarea id="mAyEn" rows="2"></textarea></div>
+        <div class="fg"><label>Reference</label><input id="mAyRef" type="text"></div>
+      </div>
+      <button class="btn btn-t" onclick="saveMeta()">Save Event Info</button>
+    </div>
+
+    <!-- ATTENDANCE TRACKER -->
+    <div class="sec" id="sec-attendance">
+      <div class="sec-hdr"><h2>Attendance</h2><p>Mark attendance by Member ID — auto-resolves name and Majlis from the registration form</p></div>
+
+      <!-- ── QUICK CHECK-IN ── -->
+      <div class="card" style="border-color:rgba(59,191,191,.45);background:rgba(59,191,191,.06)">
+        <div class="card-ttl" style="color:var(--tl)">Mark Attendance — Enter Member ID</div>
+        <div style="display:flex;gap:10px;align-items:stretch">
+          <input id="codeInput" type="text" autocomplete="off" spellcheck="false"
+            placeholder="Type or scan Khuddam Member ID (e.g. 12345)"
+            style="flex:1;background:rgba(0,0,0,.3);border:2px solid rgba(59,191,191,.3);border-radius:10px;
+                   padding:14px 18px;color:var(--w);font-family:'Montserrat',sans-serif;
+                   font-size:1.05rem;font-weight:700;letter-spacing:.06em;outline:none;transition:border-color .2s"
+            onfocus="this.style.borderColor='var(--teal)'"
+            onblur="this.style.borderColor='rgba(59,191,191,.3)'"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();doCheckIn();}">
+          <button class="btn btn-t" style="font-size:.85rem;padding:0 30px;border-radius:10px;flex-shrink:0" onclick="doCheckIn()">
+            Check In
+          </button>
+          <button class="btn btn-gh" style="font-size:.78rem;padding:0 16px;border-radius:10px;flex-shrink:0" onclick="doUndo()" title="Undo last check-in">
+            Undo
+          </button>
+        </div>
+
+        <!-- Feedback box -->
+        <div id="ciResult" style="display:none;margin-top:12px;padding:14px 18px;border-radius:10px;font-size:.88rem;font-weight:700;line-height:1.5"></div>
+
+        <!-- Last checked-in member card -->
+        <div id="ciCard" style="display:none;margin-top:10px;padding:12px 16px;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);border-radius:10px">
+          <div style="font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--greenl);font-weight:700;margin-bottom:6px">Last Check-in</div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div id="ciAvatar" style="width:44px;height:44px;border-radius:50%;background:rgba(74,222,128,.2);border:2px solid rgba(74,222,128,.4);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:var(--greenl);flex-shrink:0"></div>
+            <div>
+              <div id="ciName"   style="font-size:.9rem;font-weight:700;color:var(--w)"></div>
+              <div style="display:flex;gap:10px;margin-top:3px">
+                <span id="ciMajlis" style="font-size:.68rem;font-weight:600"></span>
+                <span id="ciId"     style="font-size:.65rem;color:var(--w5)"></span>
+                <span id="ciTime"   style="font-size:.65rem;color:var(--w5)"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size:.64rem;color:var(--w5);margin-top:10px;line-height:1.7">
+          Works with barcode/QR scanners — just focus the field and scan.
+          Member must be registered via the Google Form first.
+          Majlis and name are auto-filled from the form responses.
+        </p>
+      </div>
+
+      <!-- ── LIVE STATS ── -->
+      <div class="att-stats" id="attStats"></div>
+
+      <!-- ── FORM LINK ── -->
+      <div class="card" id="formLinkCard" style="display:none">
+        <div class="card-ttl">Registration Form Link</div>
+        <p style="font-size:.74rem;color:var(--w8);margin-bottom:10px">Share this link with members to register for the Ijtema:</p>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="formLinkInput" type="text" readonly style="flex:1;background:rgba(0,0,0,.2);border:1px solid var(--bdr);border-radius:8px;padding:8px 12px;color:var(--tl);font-size:.76rem;cursor:text">
+          <button class="btn btn-t btn-sm" onclick="copyFormLink()">Copy</button>
+          <a id="formLinkOpen" href="#" target="_blank" class="btn btn-gh btn-sm" style="text-decoration:none;display:inline-flex;align-items:center">Open</a>
+        </div>
+      </div>
+
+      <!-- ── MEMBER LIST ── -->
+      <div class="card">
+        <div class="card-ttl">
+          Registered Members
+          <div style="display:flex;gap:6px;align-items:center">
+            <span id="attCountBadge" class="badge badge-t">—</span>
+            <button class="btn btn-gh btn-sm" onclick="refreshMembers()">Refresh</button>
+            <button class="btn btn-d btn-sm" onclick="confirmClearAtt()">Clear All</button>
+          </div>
+        </div>
+        <input id="attSearch" type="text" placeholder="Search by name or Member ID..."
+          style="background:rgba(0,0,0,.2);border:1px solid var(--bdr);border-radius:8px;padding:8px 11px;
+                 color:var(--w);font-family:'Montserrat',sans-serif;font-size:.76rem;outline:none;width:100%;margin-bottom:10px"
+          oninput="filterMembers()">
+        <div class="att-filter-row" id="attFilters"></div>
+        <div id="attList" style="max-height:320px;overflow-y:auto">
+          <p style="font-size:.74rem;color:var(--w5);padding:8px">Connect Google Sheets and click Refresh to load members.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBER DATABASE -->
+    <div class="sec" id="sec-members">
+      <div class="sec-hdr"><h2>Member Database</h2><p>Master list of all Khuddam members in Northern Ontario region</p></div>
+
+      <!-- CSV IMPORT -->
+      <div class="card" style="border-color:rgba(200,168,75,.35);background:rgba(200,168,75,.05)">
+        <div class="card-ttl" style="color:var(--gl)">Import from CSV / Spreadsheet</div>
+        <p style="font-size:.74rem;color:var(--w8);line-height:1.8;margin-bottom:12px">
+          Export your member list as a <strong>CSV file</strong> with these columns in order:<br>
+          <code style="background:rgba(0,0,0,.3);padding:2px 8px;border-radius:4px;color:var(--tl)">Member ID, Full Name, Majlis, Phone</code><br>
+          First row can be a header — the system will skip it automatically.
+        </p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:8px;padding:9px 18px;background:rgba(200,168,75,.15);
+                        border:1px solid rgba(200,168,75,.35);border-radius:8px;cursor:pointer;
+                        font-size:.74rem;font-weight:700;color:var(--gl);transition:all .2s"
+                 onmouseover="this.style.background='rgba(200,168,75,.25)'"
+                 onmouseout="this.style.background='rgba(200,168,75,.15)'">
+            Choose CSV File
+            <input type="file" accept=".csv,.txt" style="display:none" onchange="handleCSV(this)">
+          </label>
+          <span id="csvFileName" style="font-size:.72rem;color:var(--w5)">No file chosen</span>
+        </div>
+        <div id="csvPreview" style="display:none;margin-top:14px">
+          <div style="font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--w5);margin-bottom:8px">Preview (first 5 rows)</div>
+          <div id="csvPreviewRows"></div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
+            <button class="btn btn-g" onclick="importCSV()">Import All</button>
+            <span id="csvCount" style="font-size:.72rem;color:var(--w5)"></span>
+          </div>
+        </div>
+        <div id="importResult" style="display:none;margin-top:10px;padding:10px 14px;border-radius:8px;font-size:.78rem;font-weight:700"></div>
+      </div>
+
+      <!-- DB STATS -->
+      <div class="att-stats" id="memberStats"></div>
+
+      <!-- MEMBER LIST FROM DB -->
+      <div class="card">
+        <div class="card-ttl">
+          All Members
+          <div style="display:flex;gap:6px">
+            <span id="memberCountBadge" class="badge badge-t">—</span>
+            <button class="btn btn-gh btn-sm" onclick="refreshMemberDB()">Refresh</button>
+          </div>
+        </div>
+        <input id="memberSearch" type="text" placeholder="Search by name or Member ID..."
+          style="background:rgba(0,0,0,.2);border:1px solid var(--bdr);border-radius:8px;padding:8px 11px;
+                 color:var(--w);font-family:'Montserrat',sans-serif;font-size:.76rem;outline:none;width:100%;margin-bottom:10px"
+          oninput="filterMemberDB()">
+        <div id="memberDBFilter" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+        <div id="memberDBList" style="max-height:340px;overflow-y:auto">
+          <p style="font-size:.74rem;color:var(--w5);padding:8px">Click Refresh to load members from Google Sheets.</p>
+        </div>
+      </div>
+
+      <!-- ADD SINGLE MEMBER -->
+      <div class="card">
+        <div class="card-ttl">Add Single Member</div>
+        <div class="grid2">
+          <div class="fg"><label>Khuddam Member ID</label><input id="dbMId" type="text" placeholder="e.g. 12345" style="text-transform:uppercase"></div>
+          <div class="fg"><label>Full Name</label><input id="dbMName" type="text" placeholder="Ahmad Siddiqui"></div>
+          <div class="fg"><label>Majlis</label><select id="dbMMajlis"></select></div>
+          <div class="fg"><label>Phone (optional)</label><input id="dbMPhone" type="text" placeholder="+1 705 555 0100"></div>
+        </div>
+        <button class="btn btn-t" style="margin-top:8px" onclick="addSingleMemberDB()">Add to Database</button>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="sec" id="sec-schedule">
+      <div class="sec-hdr"><h2>Program Schedule</h2><p>Manage programs across venues</p></div>
+      <div id="venueBlocks"></div>
+      <div class="card">
+        <div class="card-ttl">Add Program</div>
+        <div class="grid2">
+          <div class="fg"><label>Venue</label><select id="sVenue"></select></div>
+          <div class="fg"><label>Time (24h e.g. 14:30)</label><input id="sTime" type="text" placeholder="14:30"></div>
+          <div class="fg"><label>Program Name</label><input id="sName" type="text" placeholder="Keynote Address"></div>
+          <div class="fg"><label>Details / Speaker</label><input id="sDet" type="text" placeholder="Optional"></div>
+        </div>
+        <button class="btn btn-t" style="margin-top:8px" onclick="addProg()">Add Program</button>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Add Venue</div>
+        <div class="grid3">
+          <div class="fg"><label>Venue Name</label><input id="vName" type="text" placeholder="Main Hall"></div>
+          <div class="fg"><label>Location</label><input id="vLoc" type="text" placeholder="Building A"></div>
+          <div class="fg" style="opacity:.5"><label>Icon (unused)</label><input type="text" disabled placeholder="text labels used"></div>
+        </div>
+        <button class="btn btn-gh btn-sm" style="margin-top:8px" onclick="addVenue()">Add Venue</button>
+      </div>
+    </div>
+
+    <!-- COMPETITIONS -->
+    <div class="sec" id="sec-competitions">
+      <div class="sec-hdr"><h2>Competitions</h2><p>Manage competitions and results</p></div>
+      <div id="compBlocks"></div>
+      <div class="card">
+        <div class="card-ttl">Add Competition</div>
+        <div class="grid2">
+          <div class="fg"><label>Name</label><input id="ncName" type="text" placeholder="Hifz-ul-Quran"></div>
+          <div class="fg"><label>Category</label><input id="ncCat" type="text" placeholder="Religious"></div>
+        </div>
+        <button class="btn btn-g" style="margin-top:8px" onclick="addComp()">Add Competition</button>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Add / Update Entry</div>
+        <div class="grid2">
+          <div class="fg"><label>Competition</label><select id="eComp"></select></div>
+          <div class="fg"><label>Majlis</label><select id="eMajlis"></select></div>
+          <div class="fg"><label>Participant Name</label><input id="eName" type="text" placeholder="Full name"></div>
+          <div class="fg"><label>Score / Points</label><input id="eScore" type="number" placeholder="0" min="0"></div>
+          <div class="fg" style="grid-column:span 2">
+            <label>Photo (Google Drive link or leave blank)</label>
+            <div style="display:flex;gap:9px;align-items:center">
+              <input id="ePhoto" type="text" placeholder="https://drive.google.com/..." style="flex:1" oninput="prevPhoto(this.value)">
+              <div class="pph" id="photoPrev">?</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-g" style="margin-top:10px" onclick="addEntry()">Save Entry</button>
+      </div>
+    </div>
+
+    <!-- MAJALIS -->
+    <div class="sec" id="sec-majalis">
+      <div class="sec-hdr"><h2>Majalis</h2><p>Add, edit or remove Majalis and their display colours</p></div>
+      <div class="card">
+        <div class="card-ttl">All Majalis</div>
+        <div id="majalisList"></div>
+      </div>
+      <div class="card">
+        <div class="card-ttl" id="majalisFormTitle">Add New Majlis</div>
+        <input type="hidden" id="editMajlisId" value="">
+        <div class="grid2">
+          <div class="fg"><label>Majlis Name</label><input id="mjName" type="text" placeholder="e.g. Barrie South"></div>
+          <div class="fg"><label>Colour (hex)</label><input id="mjColor" type="color" value="#4ade80" style="height:40px;padding:2px 4px;cursor:pointer"></div>
+          <div class="fg"><label>Registered Count</label><input id="mjReg" type="number" value="0" min="0"></div>
+          <div class="fg"><label>Present Count</label><input id="mjPres" type="number" value="0" min="0"></div>
+        </div>
+        <div style="display:flex;gap:9px;margin-top:10px">
+          <button class="btn btn-t" onclick="saveMajlis()">Save Majlis</button>
+          <button class="btn btn-gh btn-sm" id="cancelMajlisEdit" style="display:none" onclick="cancelMajlisEdit()">Cancel Edit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RANKINGS -->
+    <div class="sec" id="sec-rankings">
+      <div class="sec-hdr"><h2>Rankings & Points</h2><p>Adjust discipline points — competition points are auto-calculated</p></div>
+      <div class="card">
+        <div class="card-ttl">Discipline Points<span><button class="btn btn-t btn-sm" onclick="saveDisc()">Save</button></span></div>
+        <div id="discRows"></div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Current Rankings (live preview)</div>
+        <table class="etbl"><thead><tr><th>Rank</th><th>Majlis</th><th>Attendance %</th><th>Comp Pts</th><th>Discipline</th><th>Total</th></tr></thead>
+        <tbody id="rankPrev"></tbody></table>
+      </div>
+    </div>
+
+    <!-- BRANDING -->
+    <div class="sec" id="sec-branding">
+      <div class="sec-hdr"><h2>Logos &amp; Background</h2><p>All images are loaded via Google Drive links</p></div>
+
+      <div class="card">
+        <div class="card-ttl">How to get a Google Drive image link</div>
+        <ol style="font-size:.74rem;line-height:2.1;color:var(--w8);padding-left:18px">
+          <li>Upload your image (logo or background photo) to Google Drive</li>
+          <li>Right-click the file &rarr; <strong>Share</strong> &rarr; set to <strong>"Anyone with the link"</strong></li>
+          <li>Click <strong>Copy link</strong> &rarr; paste it in the field below</li>
+          <li>The URL is automatically converted — you don't need to edit it</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <div class="card-ttl">Logos</div>
+        <div class="grid2">
+          <div>
+            <div class="fg"><label>Ijtema Logo — Google Drive link</label>
+              <input id="logo1Url" type="text" placeholder="https://drive.google.com/file/d/..." oninput="prevLogo('logo1Url','logo1Prev')">
+            </div>
+            <div style="margin-top:8px;display:flex;align-items:center;gap:10px">
+              <div class="pph" id="logo1Prev" style="width:56px;height:56px;font-size:.7rem">?</div>
+              <span style="font-size:.62rem;color:var(--w5)">Preview</span>
+            </div>
+          </div>
+          <div>
+            <div class="fg"><label>Northern Ontario Logo — Google Drive link</label>
+              <input id="logo2Url" type="text" placeholder="https://drive.google.com/file/d/..." oninput="prevLogo('logo2Url','logo2Prev')">
+            </div>
+            <div style="margin-top:8px;display:flex;align-items:center;gap:10px">
+              <div class="pph" id="logo2Prev" style="width:56px;height:56px;font-size:.7rem">?</div>
+              <span style="font-size:.62rem;color:var(--w5)">Preview</span>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:10px 14px;background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.2);border-radius:8px;font-size:.7rem;color:var(--gl);line-height:1.7">
+          <strong>If preview shows "Check sharing settings":</strong><br>
+          In Google Drive → right-click file → Share → change to <strong>"Anyone with the link"</strong> → Save
+        </div>
+        <button class="btn btn-t" style="margin-top:12px" onclick="saveLogos()">Save Logos</button>
+      </div>
+
+      <div class="card">
+        <div class="card-ttl">Background Photo</div>
+        <p style="font-size:.72rem;color:var(--w8);line-height:1.7;margin-bottom:12px">Google Drive link works on any device including the TV. A local filename (e.g. <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;color:var(--tl)">bg.jpg</code>) only works if display and admin are on the same computer.</p>
+        <div class="fg"><label>Google Drive Link (recommended)</label>
+          <div style="display:flex;gap:8px">
+            <input id="bgDrive" type="text" placeholder="https://drive.google.com/file/d/..." style="flex:1" oninput="prevBg()">
+            <button class="btn btn-t btn-sm" onclick="prevBg()">Preview</button>
+          </div>
+        </div>
+        <div id="bgPrevWrap" style="display:none;margin:10px 0">
+          <div style="position:relative;width:100%;height:140px;border-radius:10px;overflow:hidden;border:1px solid var(--bdr)">
+            <img id="bgPrevImg" src="" style="width:100%;height:100%;object-fit:cover" onerror="bgFail()" onload="bgOk()">
+            <div id="bgPrevOv" style="position:absolute;inset:0;background:rgba(5,20,12,.55);display:flex;align-items:center;justify-content:center">
+              <span id="bgPrevLbl" style="font-size:.7rem;font-weight:700;color:var(--w)">Loading...</span>
+            </div>
+          </div>
+        </div>
+        <div class="fg" style="margin-top:10px"><label>Local Filename (same-device only)</label>
+          <input id="bgLocal" type="text" placeholder="e.g. bg.jpg">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-t" onclick="saveBg()">Save Background</button>
+          <button class="btn btn-gh btn-sm" onclick="clearBg()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="sec" id="sec-announce">
+      <div class="sec-hdr"><h2>Announcements</h2><p>Messages shown in the scrolling ticker at the bottom of the display</p></div>
+      <div class="card">
+        <div class="card-ttl">Active Announcements</div>
+        <div id="annList"></div>
+        <hr style="border:none;border-top:1px solid var(--bdr);margin:14px 0">
+        <div class="fg"><label>New Announcement</label><textarea id="newAnn" rows="2" placeholder="e.g. Dhuhr Prayer at 1:00 PM in Main Hall"></textarea></div>
+        <button class="btn btn-t" style="margin-top:8px" onclick="addAnn()">Post Announcement</button>
+      </div>
+    </div>
+
+    <!-- GOOGLE SHEETS SYNC -->
+    <div class="sec" id="sec-sheets">
+      <div class="sec-hdr"><h2>Google Sheets Sync</h2><p>Connect a Google Sheet so any device can update the display in real time</p></div>
+
+      <div class="card">
+        <div class="card-ttl">Connection Status <span id="sheetsStatus" class="badge badge-r">Not connected</span></div>
+        <div class="fg"><label>Apps Script Web App URL</label>
+          <div style="display:flex;gap:8px">
+            <input id="sheetsUrl" type="text" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1">
+            <button class="btn btn-t" onclick="connectSheets()">Connect &amp; Test</button>
+          </div>
+        </div>
+        <p style="font-size:.7rem;color:var(--w5);margin-top:8px;line-height:1.7">
+          Don't have a URL yet? Open <strong>sheets-setup.html</strong> (in the same folder) for step-by-step instructions to set up your Apps Script in 5 minutes.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-ttl">Sync Controls</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-t" onclick="pushNow()">Push to Sheets Now</button>
+          <button class="btn btn-gh" onclick="pullNow()">Pull from Sheets</button>
+          <button class="btn btn-gh" onclick="window.open('sheets-setup.html','_blank')">Setup Guide</button>
+        </div>
+        <p style="font-size:.7rem;color:var(--w5);margin-top:12px;line-height:1.7">
+          <strong>Push</strong> — sends all current data to Google Sheets immediately.<br>
+          <strong>Pull</strong> — fetches latest data from Sheets and overwrites local storage.<br>
+          Auto-push happens on every Save. Display auto-pulls every 30 seconds.
+        </p>
+        <div id="syncLog" style="margin-top:12px;font-size:.68rem;color:var(--w5);font-family:monospace;line-height:1.8;max-height:100px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:6px;padding:8px 10px;display:none"></div>
+      </div>
+    </div>
+
+    <!-- SETUP GUIDE -->
+    <div class="sec" id="sec-info">
+      <div class="sec-hdr"><h2>Setup Guide</h2><p>How to use this dashboard system</p></div>
+      <div class="card">
+        <div class="card-ttl">Files Required</div>
+        <p style="font-size:.76rem;color:var(--w8);line-height:1.9">Keep these <strong>3 files in the same folder</strong>:</p>
+        <ul style="font-size:.74rem;color:var(--w8);line-height:2.2;padding-left:18px;margin-top:6px">
+          <li><code style="color:var(--tl)">display.html</code> — open this on the TV (press F11 for fullscreen)</li>
+          <li><code style="color:var(--tl)">admin.html</code> — open this on the organizer laptop</li>
+          <li><code style="color:var(--tl)">data.js</code> — shared data file, do not edit directly</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Live Updates</div>
+        <p style="font-size:.74rem;color:var(--w8);line-height:1.9">Both pages share <strong>browser localStorage</strong>. Changes saved here appear on the display within <strong>30 seconds</strong> automatically — or instantly when the slide changes.</p>
+        <p style="font-size:.74rem;color:var(--w8);line-height:1.9;margin-top:8px"><strong>Important:</strong> Admin and display must be open in the <strong>same browser on the same computer</strong> for localStorage to sync. For multi-device use, Google Sheets integration can be added.</p>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Data Backup</div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button class="btn btn-t" onclick="exportD()">Export JSON Backup</button>
+          <button class="btn btn-gh" onclick="importD()">Import JSON</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="conf" id="conf">
+  <div class="conf-box">
+    <h3 id="confTtl"></h3><p id="confMsg"></p>
+    <div class="conf-btns">
+      <button class="btn btn-gh" onclick="closeConf()">Cancel</button>
+      <button class="btn btn-d" id="confOk">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let D = loadData();
+function persist(){
+  saveData(D);
+  const s=document.getElementById('savedMsg');
+  s.classList.add('on');
+  clearTimeout(persist._t);
+  persist._t=setTimeout(()=>s.classList.remove('on'),2000);
+
+  // BroadcastChannel — reliable cross-tab sync for same-origin
+  try {
+    const bc = new BroadcastChannel('ijtema_sync');
+    bc.postMessage({ type:'dataUpdate', key:'ijtema_data_v2' });
+    bc.close();
+  } catch(e) {}
+
+  // Auto-push to Google Sheets if connected
+  const url = getSheetsUrl();
+  if(url){
+    pushToSheets(D).then(r=>{
+      if(r.ok) syncLog('Auto-pushed to Sheets');
+      else syncLog('Auto-push failed: '+r.msg);
+    });
+  }
+}
+
+function showSec(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  if(btn)btn.classList.add('on');
+  renderSec(id);
+}
+function renderSec(id){
+  if(id==='meta') rMeta();
+  if(id==='attendance'){ rAtt(); }
+  if(id==='members') renderSec_members();
+  if(id==='schedule') rSched();
+  if(id==='competitions') rComps();
+  if(id==='rankings') rRank();
+  if(id==='majalis') rMajalis();
+  if(id==='branding') rBrand();
+  if(id==='announce') rAnn();
+  if(id==='sheets') loadSheetsUrl();
+}
+
+/* META */
+function rMeta(){const m=D.meta;document.getElementById('mTitle').value=m.title||'';document.getElementById('mDate').value=m.date||'';document.getElementById('mLoc').value=m.location||'';document.getElementById('mTheme').value=m.theme||'';document.getElementById('mAyAr').value=m.ayah_arabic||'';document.getElementById('mAyEn').value=m.ayah_english||'';document.getElementById('mAyRef').value=m.ayah_ref||'';}
+function saveMeta(){D.meta.title=document.getElementById('mTitle').value;D.meta.date=document.getElementById('mDate').value;D.meta.location=document.getElementById('mLoc').value;D.meta.theme=document.getElementById('mTheme').value;D.meta.ayah_arabic=document.getElementById('mAyAr').value;D.meta.ayah_english=document.getElementById('mAyEn').value;D.meta.ayah_ref=document.getElementById('mAyRef').value;persist();toast('Event info saved');}
+
+/* ── ATTENDANCE ── */
+let _allMembers = [];    // cache from Sheets
+let _attFilter  = 'all';
+let _lastId     = '';    // for undo
+
+function rAtt(){
+  // populate Majlis select for Add Member
+  const ms = document.getElementById('mMajlis');
+  if(ms) ms.innerHTML = D.majalis.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  // build filters
+  const ff = document.getElementById('attFilters');
+  if(ff) ff.innerHTML =
+    `<button class="att-filter on" id="af_all" onclick="setAttF('all')">All</button>`+
+    D.majalis.map(m=>`<button class="att-filter" id="af_${m.id}" onclick="setAttF('${m.id}')">${m.name}</button>`).join('')+
+    `<button class="att-filter" id="af_present" onclick="setAttF('present')">Present only</button>`+
+    `<button class="att-filter" id="af_absent"  onclick="setAttF('absent')">Not checked in</button>`;
+  renderStats();
+  loadFormUrl();
+  if(_allMembers.length > 0) renderMemberList();
+}
+
+function setAttF(f){
+  _attFilter=f;
+  document.querySelectorAll('.att-filter').forEach(b=>b.classList.remove('on'));
+  const el=document.getElementById('af_'+f); if(el) el.classList.add('on');
+  renderMemberList();
+}
+
+function renderStats(){
+  const totR=D.majalis.reduce((a,m)=>a+m.registered,0);
+  const totP=D.majalis.reduce((a,m)=>a+m.present,0);
+  const el=document.getElementById('attStats'); if(!el)return;
+  el.innerHTML=[
+    {n:totR, l:'Registered'},
+    {n:totP, l:'Present'},
+    {n:totR-totP, l:'Not yet arrived'},
+    {n:totR?Math.round(totP/totR*100):0, l:'% Attendance', suffix:'%'},
+  ].map(x=>`<div class="att-stat"><div class="att-stat-num">${x.n}${x.suffix||''}</div><div class="att-stat-lbl">${x.l}</div></div>`).join('');
+}
+
+async function loadFormUrl(){
+  const url = await fetchFormUrl();
+  const card = document.getElementById('formLinkCard');
+  if(!url || !card) return;
+  card.style.display='block';
+  document.getElementById('formLinkInput').value=url;
+  document.getElementById('formLinkOpen').href=url;
+}
+function copyFormLink(){
+  const inp=document.getElementById('formLinkInput');
+  navigator.clipboard.writeText(inp.value).then(()=>toast('Form link copied!'));
+}
+
+async function refreshMembers(){
+  const el=document.getElementById('attList');
+  if(el) el.innerHTML='<p style="font-size:.74rem;color:var(--w5);padding:8px">Loading from Sheets...</p>';
+  const members = await fetchMembers();
+  if(!members){ el.innerHTML='<p style="font-size:.74rem;color:var(--red);padding:8px">Could not load — check Sheets connection.</p>'; return; }
+  _allMembers=members;
+  // update D.majalis counts from live data
+  D.majalis.forEach(m=>{
+    m.registered = members.filter(x=>x.majlisId===m.id).length;
+    m.present    = members.filter(x=>x.majlisId===m.id&&x.checkedIn).length;
+  });
+  persist();
+  renderStats();
+  renderMemberList();
+  toast('Members loaded: '+members.length+' registered');
+}
+
+function renderMemberList(){
+  const q=((document.getElementById('attSearch')||{}).value||'').toLowerCase();
+  const list=_allMembers.filter(m=>{
+    if(q && !m.name.toLowerCase().includes(q) && !m.memberId.toLowerCase().includes(q)) return false;
+    if(_attFilter==='present') return m.checkedIn;
+    if(_attFilter==='absent')  return !m.checkedIn;
+    if(_attFilter!=='all')     return m.majlisId===_attFilter;
+    return true;
+  });
+  const badge=document.getElementById('attCountBadge');
+  if(badge) badge.textContent=_allMembers.length+' registered';
+  const el=document.getElementById('attList'); if(!el)return;
+  if(list.length===0){el.innerHTML='<p style="font-size:.74rem;color:var(--w5);padding:8px">No members found.</p>';return;}
+  el.innerHTML=list.map(m=>{
+    const mj=D.majalis.find(x=>x.id===m.majlisId)||{color:'#3bbfbf'};
+    const ini=m.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:9px;margin-bottom:5px;
+                background:${m.checkedIn?'rgba(74,222,128,.06)':'rgba(0,0,0,.2)'};
+                border:1px solid ${m.checkedIn?'rgba(74,222,128,.25)':'rgba(255,255,255,.06)'}">
+      <div style="width:34px;height:34px;border-radius:50%;background:${mj.color}22;border:1.5px solid ${mj.color}55;
+                  display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:${mj.color};flex-shrink:0">${ini}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.8rem;color:var(--w)">${m.name}</div>
+        <div style="font-size:.62rem;color:${mj.color};font-weight:600">${m.majlisName} &nbsp;·&nbsp; <span style="color:var(--w5)">${m.memberId}</span></div>
+      </div>
+      <div style="font-size:.62rem;color:var(--w5);min-width:60px;text-align:right">${m.checkedIn?'<span style="color:var(--greenl);font-weight:700">Present</span><br>'+m.checkInTime:'Not arrived'}</div>
+      <div style="font-size:.58rem;font-weight:700;min-width:70px;text-align:right;flex-shrink:0">
+        ${m.flag==='NOT_REGISTERED'?'<span style="color:#facc15">Not Registered</span>':
+          m.flag==='NOT_IN_DB'?'<span style="color:#f87171">Not in DB</span>':
+          m.checkedIn?'':''}
+      </div>
+      ${m.checkedIn
+        ?`<button class="btn btn-d btn-xs" onclick="undoMember('${m.memberId}')">Undo</button>`
+        :`<button class="btn btn-t btn-xs" onclick="checkInById('${m.memberId}')">Check In</button>`
+      }
+    </div>`;
+  }).join('');
+}
+function filterMembers(){ renderMemberList(); }
+
+// ── MAIN CHECK-IN ACTION ──
+async function doCheckIn(){
+  const inp  = document.getElementById('codeInput');
+  const id   = (inp?.value||'').trim().toUpperCase();
+  if(!id){ showCiResult('error','Enter a Member ID first'); return; }
+  if(!getSheetsUrl()){ showCiResult('error','Google Sheets not connected — go to Google Sheets Sync to connect first'); return; }
+
+  showCiResult('loading','Checking in '+id+'...');
+  const r = await checkInMember(id);
+
+  if(r.status==='ok'||r.status==='warning'||r.status==='flagged'){
+    _lastId = id;
+    const m = r.member;
+    showCiResult(r.status, r.message);
+    showCiCard(m);
+    inp.value='';
+    const cached=_allMembers.find(x=>x.memberId===id);
+    if(cached){ cached.checkedIn=true; cached.checkInTime=m.checkInTime; cached.flag=m.flag||''; }
+    else _allMembers.push({...m, checkedIn:true});
+    const mj=D.majalis.find(x=>x.id===m.majlisId);
+    if(mj) mj.present=Math.max(0,mj.present+1);
+    persist(); renderStats(); renderMemberList();
+  } else if(r.status==='already'){
+    showCiResult('already', r.message);
+    if(r.member) showCiCard(r.member);
+    inp.value='';
+  } else {
+    showCiResult('error', r.message||'Unknown error');
+  }
+  inp.focus();
+}
+
+// Check-in from member list row
+async function checkInById(id){
+  document.getElementById('codeInput').value=id;
+  await doCheckIn();
+}
+
+async function doUndo(){
+  const id = _lastId || (document.getElementById('codeInput')?.value||'').trim().toUpperCase();
+  if(!id){ toast('No recent check-in to undo'); return; }
+  const r = await undoCheckIn(id);
+  if(r.status==='ok'){
+    toast('Check-in undone for '+id);
+    const cached=_allMembers.find(x=>x.memberId===id);
+    if(cached){ cached.checkedIn=false; cached.checkInTime=''; }
+    const mj=D.majalis.find(x=>x.id===(cached?.majlisId));
+    if(mj) mj.present=Math.max(0,mj.present-1);
+    persist(); renderStats(); renderMemberList();
+    document.getElementById('ciCard').style.display='none';
+    _lastId='';
+  } else toast('Undo failed: '+(r.message||''));
+}
+
+async function undoMember(id){
+  _lastId=id;
+  await doUndo();
+}
+
+function showCiResult(type, msg){
+  const el=document.getElementById('ciResult'); if(!el)return;
+  el.style.display='block';
+  const styles={
+    ok:      'background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:#4ade80',
+    warning: 'background:rgba(250,204,21,.10);border:1px solid rgba(250,204,21,.35);color:#facc15',
+    flagged: 'background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171',
+    already: 'background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.3);color:#facc15',
+    error:   'background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171',
+    loading: 'background:rgba(59,191,191,.1);border:1px solid rgba(59,191,191,.25);color:#7dd8d8',
+  };
+  el.style.cssText+= ';'+styles[type]||styles.loading;
+  const icon = type==='ok'?'✓ ':type==='warning'?'⚠ ':type==='flagged'?'⚑ ':type==='error'?'✕ ':'';
+  el.textContent = icon+msg;
+  if(type==='ok'||type==='already') setTimeout(()=>{el.style.display='none';},4000);
+}
+
+function showCiCard(m){
+  if(!m)return;
+  const card=document.getElementById('ciCard'); if(!card)return;
+  card.style.display='block';
+  const mj=D.majalis.find(x=>x.id===m.majlisId)||{color:'#3bbfbf'};
+  const ini=(m.name||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const av=document.getElementById('ciAvatar');
+  if(av){ av.textContent=ini; av.style.background=mj.color+'33'; av.style.borderColor=mj.color+'66'; av.style.color=mj.color; }
+  const nm=document.getElementById('ciName'); if(nm) nm.textContent=m.name;
+  const mjs=document.getElementById('ciMajlis'); if(mjs){ mjs.textContent=m.majlisName; mjs.style.color=mj.color; }
+  const ids=document.getElementById('ciId'); if(ids) ids.textContent='ID: '+m.memberId;
+  const ts=document.getElementById('ciTime'); if(ts) ts.textContent=m.checkInTime?'at '+m.checkInTime:'';
+}
+
+function confirmClearAtt(){
+  confDo('Clear all attendance?','This marks everyone as not present. Cannot be undone.',async()=>{
+    const r=await clearAllAttendance();
+    if(r.status==='ok'){
+      _allMembers.forEach(m=>{m.checkedIn=false;m.checkInTime='';});
+      D.majalis.forEach(m=>{m.present=0;});
+      persist();renderStats();renderMemberList();toast('All attendance cleared');
+    } else toast('Error: '+r.message);
+  });
+}
+
+/* SCHEDULE */
+function rSched(){
+  document.getElementById('sVenue').innerHTML=D.venues.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+  document.getElementById('venueBlocks').innerHTML=D.venues.map((v,vi)=>`
+    <div class="card">
+      <div class="card-ttl">
+        <span id="vtitle_${v.id}">${v.name} <span style="font-weight:400;color:var(--w5);font-size:.7rem">${v.location}</span></span>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-gh btn-xs" onclick="editVenue('${v.id}')">Edit</button>
+          <button class="btn btn-d btn-xs" onclick="confDo('Remove venue?','All programs deleted.',()=>rmVenue(${vi}))">Remove</button>
+        </div>
+      </div>
+      <div id="vedit_${v.id}" style="display:none;margin-bottom:10px;padding:10px;background:rgba(0,0,0,.2);border-radius:8px;border:1px solid var(--bdr)">
+        <div class="grid2" style="margin-bottom:8px">
+          <div class="fg" style="margin:0"><label>Venue Name</label><input id="veName_${v.id}" type="text" value="${v.name}"></div>
+          <div class="fg" style="margin:0"><label>Location</label><input id="veLoc_${v.id}" type="text" value="${v.location}"></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-t btn-sm" onclick="saveVenueEdit('${v.id}')">Save</button>
+          <button class="btn btn-gh btn-sm" onclick="cancelVenueEdit('${v.id}')">Cancel</button>
+        </div>
+      </div>
+      ${v.programs.length===0?'<p style="font-size:.73rem;color:var(--w5)">No programs yet.</p>':''}
+      ${v.programs.map((p,pi)=>`
+        <div class="li" id="prog_${v.id}_${pi}">
+          <div class="li-info"><div class="li-name">${p.time} — ${p.name}</div><div class="li-sub">${p.detail||'–'}</div></div>
+          <select class="ssel" onchange="chgStat('${v.id}',${pi},this.value)">
+            <option value="done" ${p.status==='done'?'selected':''}>Done</option>
+            <option value="now"  ${p.status==='now'?'selected':''}>Now</option>
+            <option value="upcoming" ${p.status==='upcoming'?'selected':''}>Upcoming</option>
+          </select>
+          <button class="btn btn-gh btn-xs" onclick="editProg('${v.id}',${pi})">Edit</button>
+          <button class="btn btn-d btn-xs" onclick="rmProg('${v.id}',${pi})">Remove</button>
+        </div>
+        <div id="progedit_${v.id}_${pi}" style="display:none;margin-bottom:6px;padding:10px;background:rgba(0,0,0,.2);border-radius:8px;border:1px solid var(--bdr)">
+          <div class="grid2" style="margin-bottom:8px">
+            <div class="fg" style="margin:0"><label>Time</label><input id="pet_${v.id}_${pi}" type="text" value="${p.time}"></div>
+            <div class="fg" style="margin:0"><label>Program Name</label><input id="pen_${v.id}_${pi}" type="text" value="${p.name}"></div>
+            <div class="fg" style="margin:0"><label>Details</label><input id="ped_${v.id}_${pi}" type="text" value="${p.detail||''}"></div>
+            <div class="fg" style="margin:0"><label>Status</label>
+              <select id="pes_${v.id}_${pi}" class="fg" style="background:rgba(0,0,0,.25);border:1px solid var(--bdr);border-radius:8px;padding:9px 11px;color:var(--w);font-family:'Montserrat',sans-serif;font-size:.76rem;outline:none;width:100%">
+                <option value="done" ${p.status==='done'?'selected':''}>Done</option>
+                <option value="now"  ${p.status==='now'?'selected':''}>Now</option>
+                <option value="upcoming" ${p.status==='upcoming'?'selected':''}>Upcoming</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-t btn-sm" onclick="saveProgEdit('${v.id}',${pi})">Save</button>
+            <button class="btn btn-gh btn-sm" onclick="cancelProgEdit('${v.id}',${pi})">Cancel</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+function editVenue(vid){
+  document.getElementById('vedit_'+vid).style.display='block';
+}
+function cancelVenueEdit(vid){
+  document.getElementById('vedit_'+vid).style.display='none';
+}
+function saveVenueEdit(vid){
+  const v=D.venues.find(x=>x.id===vid); if(!v)return;
+  v.name=document.getElementById('veName_'+vid).value.trim()||v.name;
+  v.location=document.getElementById('veLoc_'+vid).value.trim()||v.location;
+  persist();rSched();toast('Venue updated');
+}
+function editProg(vid,pi){
+  document.getElementById('progedit_'+vid+'_'+pi).style.display='block';
+  document.getElementById('prog_'+vid+'_'+pi).style.display='none';
+}
+function cancelProgEdit(vid,pi){
+  document.getElementById('progedit_'+vid+'_'+pi).style.display='none';
+  document.getElementById('prog_'+vid+'_'+pi).style.display='flex';
+}
+function saveProgEdit(vid,pi){
+  const v=D.venues.find(x=>x.id===vid); if(!v)return;
+  v.programs[pi].time   = document.getElementById('pet_'+vid+'_'+pi).value.trim()||v.programs[pi].time;
+  v.programs[pi].name   = document.getElementById('pen_'+vid+'_'+pi).value.trim()||v.programs[pi].name;
+  v.programs[pi].detail = document.getElementById('ped_'+vid+'_'+pi).value.trim();
+  v.programs[pi].status = document.getElementById('pes_'+vid+'_'+pi).value;
+  v.programs.sort((a,b)=>a.time.localeCompare(b.time));
+  persist();rSched();toast('Program updated');
+}
+function addProg(){const vid=document.getElementById('sVenue').value,time=document.getElementById('sTime').value.trim(),name=document.getElementById('sName').value.trim(),det=document.getElementById('sDet').value.trim();if(!time||!name){toast('Time and name required');return;}const v=D.venues.find(x=>x.id===vid);v.programs.push({time,name,detail:det,status:'upcoming'});v.programs.sort((a,b)=>a.time.localeCompare(b.time));document.getElementById('sTime').value='';document.getElementById('sName').value='';document.getElementById('sDet').value='';persist();rSched();toast('Program added');}
+function chgStat(vid,pi,s){const v=D.venues.find(x=>x.id===vid);if(v)v.programs[pi].status=s;persist();}
+function rmProg(vid,pi){const v=D.venues.find(x=>x.id===vid);if(v)v.programs.splice(pi,1);persist();rSched();}
+function addVenue(){const name=document.getElementById('vName').value.trim(),loc=document.getElementById('vLoc').value.trim();if(!name){toast('Name required');return;}D.venues.push({id:'v'+Date.now(),name,location:loc||'TBD',programs:[]});document.getElementById('vName').value='';document.getElementById('vLoc').value='';persist();rSched();toast('Venue added');}
+function rmVenue(vi){D.venues.splice(vi,1);persist();rSched();}
+
+/* COMPETITIONS */
+function rComps(){
+  document.getElementById('eComp').innerHTML=D.competitions.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('eMajlis').innerHTML=D.majalis.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  document.getElementById('compBlocks').innerHTML=D.competitions.map((c,ci)=>`
+    <div class="card">
+      <div class="card-ttl">
+        <span>${c.name} <span class="badge badge-t">${c.category}</span></span>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-gh btn-xs" onclick="editComp('${c.id}')">Edit</button>
+          <button class="btn btn-d btn-xs" onclick="confDo('Remove competition?','All entries deleted.',()=>rmComp(${ci}))">Remove</button>
+        </div>
+      </div>
+      <div id="compedit_${c.id}" style="display:none;margin-bottom:12px;padding:10px;background:rgba(0,0,0,.2);border-radius:8px;border:1px solid var(--bdr)">
+        <div class="grid2" style="margin-bottom:8px">
+          <div class="fg" style="margin:0"><label>Competition Name</label><input id="cen_${c.id}" type="text" value="${c.name}"></div>
+          <div class="fg" style="margin:0"><label>Category</label><input id="cec_${c.id}" type="text" value="${c.category}"></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-t btn-sm" onclick="saveCompEdit('${c.id}')">Save</button>
+          <button class="btn btn-gh btn-sm" onclick="document.getElementById('compedit_${c.id}').style.display='none'">Cancel</button>
+        </div>
+      </div>
+      ${c.entries.length===0?'<p style="font-size:.73rem;color:var(--w5)">No entries yet.</p>':
+      `<table class="etbl"><thead><tr><th>Rank</th><th>Name</th><th>Majlis</th><th>Score</th><th></th></tr></thead><tbody>
+      ${[...c.entries].sort((a,b)=>b.score-a.score).map((e,ri)=>{
+        const mj=D.majalis.find(x=>x.id===e.majlis)||{name:e.majlis,color:'#3bbfbf'};
+        const origIdx=c.entries.indexOf(e);
+        return `<tr id="erow_${c.id}_${origIdx}">
+          <td>${['1st','2nd','3rd'][ri]||ri+1}</td>
+          <td style="display:flex;align-items:center;gap:7px">
+            <div class="pph" style="width:30px;height:30px;font-size:.6rem">${e.photo?`<img src="${driveToDirectUrl(e.photo)}" onerror="this.parentNode.textContent='?'">`:'?'}</div>
+            ${e.name}
+          </td>
+          <td style="color:${mj.color};font-weight:700">${mj.name}</td>
+          <td><strong>${e.score}</strong></td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-gh btn-xs" onclick="editEntry('${c.id}',${origIdx})" style="margin-right:3px">Edit</button>
+            <button class="btn btn-d btn-xs" onclick="rmEntry('${c.id}',${origIdx})">Remove</button>
+          </td>
+        </tr>
+        <tr id="eedit_${c.id}_${origIdx}" style="display:none">
+          <td colspan="5" style="padding:10px;background:rgba(0,0,0,.2)">
+            <div class="grid2" style="margin-bottom:8px">
+              <div class="fg" style="margin:0"><label>Name</label><input id="een_${c.id}_${origIdx}" type="text" value="${e.name}"></div>
+              <div class="fg" style="margin:0"><label>Score</label><input id="ees_${c.id}_${origIdx}" type="number" value="${e.score}" min="0"></div>
+              <div class="fg" style="margin:0"><label>Majlis</label>
+                <select id="eem_${c.id}_${origIdx}" style="background:rgba(0,0,0,.25);border:1px solid var(--bdr);border-radius:8px;padding:9px 11px;color:var(--w);font-family:'Montserrat',sans-serif;font-size:.76rem;outline:none;width:100%">
+                  ${D.majalis.map(m=>`<option value="${m.id}" ${m.id===e.majlis?'selected':''}>${m.name}</option>`).join('')}
+                </select>
+              </div>
+              <div class="fg" style="margin:0"><label>Photo (Drive link)</label><input id="eep_${c.id}_${origIdx}" type="text" value="${e.photo||''}"></div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-t btn-sm" onclick="saveEntryEdit('${c.id}',${origIdx})">Save</button>
+              <button class="btn btn-gh btn-sm" onclick="cancelEntryEdit('${c.id}',${origIdx})">Cancel</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>`}
+    </div>`).join('');
+}
+function editComp(cid){document.getElementById('compedit_'+cid).style.display='block';}
+function saveCompEdit(cid){
+  const c=D.competitions.find(x=>x.id===cid); if(!c)return;
+  c.name=document.getElementById('cen_'+cid).value.trim()||c.name;
+  c.category=document.getElementById('cec_'+cid).value.trim()||c.category;
+  persist();rComps();toast('Competition updated');
+}
+function editEntry(cid,idx){
+  document.getElementById('erow_'+cid+'_'+idx).style.display='none';
+  document.getElementById('eedit_'+cid+'_'+idx).style.display='';
+}
+function cancelEntryEdit(cid,idx){
+  document.getElementById('eedit_'+cid+'_'+idx).style.display='none';
+  document.getElementById('erow_'+cid+'_'+idx).style.display='';
+}
+function saveEntryEdit(cid,idx){
+  const c=D.competitions.find(x=>x.id===cid); if(!c)return;
+  c.entries[idx].name   = document.getElementById('een_'+cid+'_'+idx).value.trim()||c.entries[idx].name;
+  c.entries[idx].score  = parseInt(document.getElementById('ees_'+cid+'_'+idx).value)||0;
+  c.entries[idx].majlis = document.getElementById('eem_'+cid+'_'+idx).value;
+  c.entries[idx].photo  = document.getElementById('eep_'+cid+'_'+idx).value.trim();
+  persist();rComps();toast('Entry updated');
+}
+function addComp(){const name=document.getElementById('ncName').value.trim(),cat=document.getElementById('ncCat').value.trim()||'General';if(!name){toast('Name required');return;}D.competitions.push({id:'c'+Date.now(),name,category:cat,entries:[]});document.getElementById('ncName').value='';document.getElementById('ncCat').value='';persist();rComps();toast('Competition added');}
+function rmComp(ci){D.competitions.splice(ci,1);persist();rComps();}
+function addEntry(){const cid=document.getElementById('eComp').value,name=document.getElementById('eName').value.trim(),majlis=document.getElementById('eMajlis').value,score=parseInt(document.getElementById('eScore').value)||0,photo=document.getElementById('ePhoto').value.trim();if(!name){toast('Name required');return;}const c=D.competitions.find(x=>x.id===cid);const ex=c.entries.findIndex(e=>e.name.toLowerCase()===name.toLowerCase()&&e.majlis===majlis);if(ex>=0)c.entries[ex]={name,majlis,score,photo};else c.entries.push({name,majlis,score,photo});document.getElementById('eName').value='';document.getElementById('eScore').value='';document.getElementById('ePhoto').value='';document.getElementById('photoPrev').innerHTML='?';persist();rComps();toast('Entry saved');}
+function rmEntry(cid,ei){const c=D.competitions.find(x=>x.id===cid);if(c)c.entries.splice(ei,1);persist();rComps();}
+function prevPhoto(url){const p=document.getElementById('photoPrev');if(url){const u=driveToDirectUrl(url);p.innerHTML=`<img src="${u}" onerror="this.innerHTML='?'">`;}else p.innerHTML='?';}
+
+/* RANKINGS */
+function rRank(){
+  document.getElementById('discRows').innerHTML=D.majalis.map((m,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <div style="width:10px;height:10px;border-radius:50%;background:${m.color};flex-shrink:0"></div>
+      <span style="font-weight:700;min-width:150px;font-size:.82rem">${m.name}</span>
+      <div class="fg" style="flex:1;margin:0"><label>Discipline Points (max 10)</label><input type="number" id="dp_${i}" value="${m.discipline||0}" min="0" max="20"></div>
+    </div>`).join('');
+  const R=calcRankings(D),POS=['1st','2nd','3rd','4th'];
+  document.getElementById('rankPrev').innerHTML=R.map((m,i)=>`<tr><td style="font-weight:700;color:${i===0?'var(--gl)':i===1?'#b8c8d0':'var(--w)'}">${POS[i]||i+1}</td><td style="color:${m.color};font-weight:700">${m.name}</td><td>${m.attPct}%</td><td>${m.compPts}</td><td>${m.discipline}</td><td><strong style="color:var(--gl)">${m.total}</strong></td></tr>`).join('');
+}
+function saveDisc(){D.majalis.forEach((m,i)=>{m.discipline=parseInt(document.getElementById('dp_'+i)?.value)||0;});persist();rRank();toast('Points saved');}
+
+/* BRANDING */
+function rBrand(){
+  document.getElementById('logo1Url').value=D.meta.logo1_gdrive||'';
+  document.getElementById('logo2Url').value=D.meta.logo2_gdrive||'';
+  document.getElementById('bgDrive').value=D.meta.bg_gdrive||'';
+  document.getElementById('bgLocal').value=D.meta.bg_local||'';
+  if(D.meta.logo1_gdrive)prevLogo('logo1Url','logo1Prev');
+  if(D.meta.logo2_gdrive)prevLogo('logo2Url','logo2Prev');
+  if(D.meta.bg_gdrive)prevBg();
+}
+function prevLogo(inId,prevId){
+  const raw=document.getElementById(inId).value.trim();
+  const p=document.getElementById(prevId);
+  if(!raw){p.innerHTML='<span style="font-size:.6rem;color:var(--w5)">?</span>';return;}
+  const url=driveToDirectUrl(raw);
+  p.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:contain;padding:3px"
+    onload="this.nextSibling&&this.nextSibling.remove()"
+    onerror="this.style.display='none';this.parentNode.innerHTML='<span style=\'font-size:.55rem;color:var(--red);text-align:center;padding:4px\'>Check sharing<br>settings</span>'">`;
+  // Show loading state
+  p.style.opacity='.5';
+  const img=p.querySelector('img');
+  if(img) img.onload=()=>{ p.style.opacity='1'; };
+}
+function saveLogos(){D.meta.logo1_gdrive=document.getElementById('logo1Url').value.trim();D.meta.logo2_gdrive=document.getElementById('logo2Url').value.trim();persist();toast('Logos saved — display updates in ~30s');}
+function prevBg(){
+  const raw=document.getElementById('bgDrive').value.trim();
+  const w=document.getElementById('bgPrevWrap'),img=document.getElementById('bgPrevImg'),lbl=document.getElementById('bgPrevLbl'),ov=document.getElementById('bgPrevOv');
+  if(!raw){w.style.display='none';return;}
+  w.style.display='block';lbl.textContent='Loading preview...';lbl.style.color='var(--w)';ov.style.display='flex';
+  img.src=driveToDirectUrl(raw);
+}
+function bgOk(){
+  const lbl=document.getElementById('bgPrevLbl');
+  const ov=document.getElementById('bgPrevOv');
+  if(lbl) lbl.textContent='Photo loaded successfully';
+  if(lbl) lbl.style.color='var(--greenl)';
+  setTimeout(()=>{ if(ov) ov.style.display='none'; },700);
+}
+function bgFail(){const l=document.getElementById('bgPrevLbl');l.textContent='Could not load — check sharing settings';l.style.color='var(--red)';}
+function saveBg(){D.meta.bg_gdrive=document.getElementById('bgDrive').value.trim();D.meta.bg_local=document.getElementById('bgLocal').value.trim();persist();toast('Background saved');}
+function clearBg(){D.meta.bg_gdrive='';D.meta.bg_local='';document.getElementById('bgDrive').value='';document.getElementById('bgLocal').value='';document.getElementById('bgPrevWrap').style.display='none';persist();toast('Background cleared');}
+
+/* ANNOUNCEMENTS */
+function rAnn(){
+  document.getElementById('annList').innerHTML=(D.announcements||[]).length===0
+    ?'<p style="font-size:.73rem;color:var(--w5)">No announcements.</p>'
+    :D.announcements.map((a,i)=>`
+      <div class="li" id="ann_${i}">
+        <div class="li-info"><div class="li-name">${a}</div></div>
+        <div class="li-act">
+          <button class="btn btn-gh btn-xs" onclick="editAnn(${i})">Edit</button>
+          <button class="btn btn-d btn-xs" onclick="rmAnn(${i})">Remove</button>
+        </div>
+      </div>
+      <div id="annedit_${i}" style="display:none;margin-bottom:6px;padding:10px;background:rgba(0,0,0,.2);border-radius:8px;border:1px solid var(--bdr)">
+        <div class="fg" style="margin-bottom:8px"><label>Edit Announcement</label>
+          <textarea id="anntxt_${i}" rows="2">${a}</textarea>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-t btn-sm" onclick="saveAnn(${i})">Save</button>
+          <button class="btn btn-gh btn-sm" onclick="cancelAnnEdit(${i})">Cancel</button>
+        </div>
+      </div>`).join('');
+}
+function editAnn(i){
+  document.getElementById('ann_'+i).style.display='none';
+  document.getElementById('annedit_'+i).style.display='block';
+}
+function cancelAnnEdit(i){
+  document.getElementById('annedit_'+i).style.display='none';
+  document.getElementById('ann_'+i).style.display='flex';
+}
+function saveAnn(i){
+  const txt=document.getElementById('anntxt_'+i).value.trim();
+  if(!txt){toast('Announcement cannot be empty');return;}
+  D.announcements[i]=txt;
+  persist();rAnn();toast('Announcement updated');
+}
+function addAnn(){const msg=document.getElementById('newAnn').value.trim();if(!msg)return;D.announcements.push(msg);document.getElementById('newAnn').value='';persist();rAnn();toast('Announcement posted');}
+function rmAnn(i){D.announcements.splice(i,1);persist();rAnn();}
+
+/* MAJALIS */
+function rMajalis(){
+  const el=document.getElementById('majalisList'); if(!el)return;
+  el.innerHTML=D.majalis.length===0?'<p style="font-size:.73rem;color:var(--w5)">No Majalis yet.</p>'
+    :D.majalis.map((m,i)=>`
+      <div class="li" id="mjrow_${m.id}">
+        <div style="width:14px;height:14px;border-radius:50%;background:${m.color};flex-shrink:0"></div>
+        <div class="li-info">
+          <div class="li-name">${m.name}</div>
+          <div class="li-sub">Registered: ${m.registered} &nbsp;·&nbsp; Present: ${m.present} &nbsp;·&nbsp; Discipline: ${m.discipline}</div>
+        </div>
+        <div class="li-act">
+          <button class="btn btn-gh btn-xs" onclick="startEditMajlis('${m.id}')">Edit</button>
+          <button class="btn btn-d btn-xs" onclick="confDo('Remove Majlis?','This cannot be undone.',()=>rmMajlis('${m.id}'))">Remove</button>
+        </div>
+      </div>`).join('');
+}
+function startEditMajlis(id){
+  const m=D.majalis.find(x=>x.id===id); if(!m)return;
+  document.getElementById('editMajlisId').value=id;
+  document.getElementById('mjName').value=m.name;
+  document.getElementById('mjColor').value=m.color;
+  document.getElementById('mjReg').value=m.registered||0;
+  document.getElementById('mjPres').value=m.present||0;
+  document.getElementById('majalisFormTitle').textContent='Edit Majlis — '+m.name;
+  document.getElementById('cancelMajlisEdit').style.display='inline-flex';
+  document.getElementById('mjName').focus();
+  document.getElementById('mjName').closest('.card').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelMajlisEdit(){
+  document.getElementById('editMajlisId').value='';
+  document.getElementById('mjName').value='';
+  document.getElementById('mjColor').value='#4ade80';
+  document.getElementById('mjReg').value='0';
+  document.getElementById('mjPres').value='0';
+  document.getElementById('majalisFormTitle').textContent='Add New Majlis';
+  document.getElementById('cancelMajlisEdit').style.display='none';
+}
+function saveMajlis(){
+  const name=document.getElementById('mjName').value.trim();
+  if(!name){toast('Name required');return;}
+  const color=document.getElementById('mjColor').value||'#4ade80';
+  const registered=parseInt(document.getElementById('mjReg').value)||0;
+  const present=parseInt(document.getElementById('mjPres').value)||0;
+  const editId=document.getElementById('editMajlisId').value;
+  if(editId){
+    const m=D.majalis.find(x=>x.id===editId);
+    if(m){m.name=name;m.color=color;m.registered=registered;m.present=present;}
+    toast('Majlis updated: '+name);
+  } else {
+    D.majalis.push({id:'m'+Date.now(),name,color,registered,present,discipline:0});
+    toast('Majlis added: '+name);
+  }
+  persist();cancelMajlisEdit();rMajalis();
+}
+function rmMajlis(id){
+  D.majalis=D.majalis.filter(x=>x.id!==id);
+  persist();rMajalis();toast('Majlis removed');
+}
+
+/* UTILS */
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),2500);}
+let _cb=null;
+function confDo(ttl,msg,cb){document.getElementById('confTtl').textContent=ttl;document.getElementById('confMsg').textContent=msg;_cb=cb;document.getElementById('conf').classList.add('on');document.getElementById('confOk').onclick=()=>{closeConf();_cb&&_cb();};}
+function closeConf(){document.getElementById('conf').classList.remove('on');}
+function doReset(){confDo('Reset to defaults?','All data will be replaced with sample data.',()=>{D=resetData();persist();renderSec('meta');toast('Reset to defaults');});}
+function exportD(){const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ijtema-data.json';a.click();}
+function importD(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=e=>{const r=new FileReader();r.onload=ev=>{try{D=JSON.parse(ev.target.result);persist();rMeta();toast('Data imported');}catch{toast('Invalid JSON');}};r.readAsText(e.target.files[0]);};i.click();}
+
+rMeta();
+loadSheetsUrl();
+
+// ── MEMBER DATABASE ──────────────────────────────────────────
+let _memberDB    = [];
+let _memberDBFilter = 'all';
+let _csvParsed   = [];
+
+function renderSec_members(){
+  // populate majlis select
+  const sel=document.getElementById('dbMMajlis');
+  if(sel) sel.innerHTML=D.majalis.map(m=>`<option value="${m.id}" data-name="${m.name}">${m.name}</option>`).join('');
+  // filter buttons
+  const ff=document.getElementById('memberDBFilter');
+  if(ff) ff.innerHTML=
+    `<button class="att-filter on" onclick="setMemberDBFilter('all')">All</button>`+
+    D.majalis.map(m=>`<button class="att-filter" onclick="setMemberDBFilter('${m.id}')">${m.name}</button>`).join('');
+  renderMemberDBStats();
+  if(_memberDB.length>0) renderMemberDBList();
+}
+
+function setMemberDBFilter(f){
+  _memberDBFilter=f;
+  document.querySelectorAll('#memberDBFilter .att-filter').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  renderMemberDBList();
+}
+
+function renderMemberDBStats(){
+  const el=document.getElementById('memberStats'); if(!el)return;
+  const total=_memberDB.length;
+  const perMajlis=D.majalis.map(m=>({name:m.name,n:_memberDB.filter(x=>x.majlisId===m.id).length}));
+  el.innerHTML=[{n:total,l:'Total Members'},...perMajlis.map(m=>({n:m.n,l:m.name}))].map(x=>
+    `<div class="att-stat"><div class="att-stat-num">${x.n}</div><div class="att-stat-lbl">${x.l}</div></div>`).join('');
+}
+
+async function refreshMemberDB(){
+  const el=document.getElementById('memberDBList');
+  if(el) el.innerHTML='<p style="font-size:.74rem;color:var(--w5);padding:8px">Loading...</p>';
+  const r=await sheetsGet({action:'getMembers',filter:''});
+  if(!r||r.status!=='ok'){if(el)el.innerHTML='<p style="font-size:.74rem;color:var(--red);padding:8px">Could not load. Check Sheets connection.</p>';return;}
+  _memberDB=r.members||[];
+  const badge=document.getElementById('memberCountBadge');
+  if(badge) badge.textContent=_memberDB.length+' members';
+  renderMemberDBStats();
+  renderMemberDBList();
+  toast(_memberDB.length+' members loaded from database');
+}
+
+function filterMemberDB(){ renderMemberDBList(); }
+
+function renderMemberDBList(){
+  const q=((document.getElementById('memberSearch')||{}).value||'').toLowerCase();
+  const list=_memberDB.filter(m=>{
+    if(_memberDBFilter!=='all'&&m.majlisId!==_memberDBFilter) return false;
+    if(q&&!m.name.toLowerCase().includes(q)&&!m.memberId.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const el=document.getElementById('memberDBList'); if(!el) return;
+  if(!list.length){el.innerHTML='<p style="font-size:.74rem;color:var(--w5);padding:8px">No members found.</p>';return;}
+  el.innerHTML=list.map(m=>{
+    const mj=D.majalis.find(x=>x.id===m.majlisId)||{color:'#3bbfbf'};
+    const ini=(m.name||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const regBadge=m.registered?`<span class="badge badge-gr" style="font-size:.52rem">Registered</span>`:'';
+    const cinBadge=m.checkedIn?`<span class="badge badge-t" style="font-size:.52rem">Present</span>`:'';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:9px;margin-bottom:5px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.06)">
+      <div style="width:32px;height:32px;border-radius:50%;background:${mj.color}22;border:1.5px solid ${mj.color}55;
+                  display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:${mj.color};flex-shrink:0">${ini}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.8rem;color:var(--w)">${m.name}</div>
+        <div style="font-size:.62rem;color:${mj.color};font-weight:600">${m.majlisName} &nbsp;·&nbsp; <span style="color:var(--w5)">${m.memberId}</span></div>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center">${regBadge}${cinBadge}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── CSV IMPORT ──
+function handleCSV(input){
+  const file=input.files[0]; if(!file) return;
+  document.getElementById('csvFileName').textContent=file.name;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    _csvParsed=parseCSV(e.target.result);
+    const cnt=document.getElementById('csvCount');
+    if(cnt) cnt.textContent=_csvParsed.length+' members ready to import';
+    const prev=document.getElementById('csvPreviewRows');
+    if(prev) prev.innerHTML=_csvParsed.slice(0,5).map(m=>
+      `<div style="display:flex;gap:14px;padding:6px 10px;border-radius:6px;background:rgba(0,0,0,.2);margin-bottom:4px;font-size:.72rem">
+        <span style="color:var(--tl);font-weight:700;min-width:80px">${m.memberId}</span>
+        <span style="color:var(--w);flex:1">${m.name}</span>
+        <span style="color:var(--gl)">${m.majlisName}</span>
+        <span style="color:var(--w5)">${m.phone}</span>
+      </div>`).join('');
+    document.getElementById('csvPreview').style.display='block';
+  };
+  reader.readAsText(file);
+}
+
+async function importCSV(){
+  if(!_csvParsed.length){toast('No data to import');return;}
+  if(!getSheetsUrl()){toast('Connect Google Sheets first');return;}
+  const res=document.getElementById('importResult');
+  res.style.display='block';
+  res.style.cssText+=';background:rgba(59,191,191,.1);border:1px solid rgba(59,191,191,.25);color:var(--tl)';
+  res.textContent='Importing '+_csvParsed.length+' members...';
+  const r=await bulkImportMembers(_csvParsed);
+  if(r.status==='ok'){
+    res.style.cssText+=';background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:#4ade80';
+    res.textContent='✓ '+r.message;
+    _csvParsed=[];
+    document.getElementById('csvPreview').style.display='none';
+    document.getElementById('csvFileName').textContent='No file chosen';
+    await refreshMemberDB();
+  } else {
+    res.style.cssText+=';background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red)';
+    res.textContent='✕ '+r.message;
+  }
+}
+
+async function addSingleMemberDB(){
+  const id  =document.getElementById('dbMId')?.value.trim().toUpperCase();
+  const name=document.getElementById('dbMName')?.value.trim();
+  const sel =document.getElementById('dbMMajlis');
+  const majlisName=sel?.options[sel?.selectedIndex]?.dataset.name||'';
+  const phone=document.getElementById('dbMPhone')?.value.trim();
+  if(!id||!name){toast('ID and Name required');return;}
+  if(!getSheetsUrl()){toast('Connect Google Sheets first');return;}
+  const r=await addMemberToDB({memberId:id,name,majlisName,phone});
+  if(r.status==='ok'){
+    toast('Member added: '+name);
+    document.getElementById('dbMId').value='';
+    document.getElementById('dbMName').value='';
+    document.getElementById('dbMPhone').value='';
+    await refreshMemberDB();
+  } else toast('Error: '+r.message);
+}
+
+// ── Google Sheets sync ─────────────────────────────────
+function loadSheetsUrl(){
+  const url=getSheetsUrl();
+  const el=document.getElementById('sheetsUrl');
+  if(el&&url){ el.value=url; updateSheetsBadge(true,'Connected'); }
+}
+
+function updateSheetsBadge(ok,msg){
+  const b=document.getElementById('sheetsStatus');
+  if(!b)return;
+  b.textContent=msg;
+  b.className='badge '+(ok?'badge-gr':'badge-r');
+}
+
+function syncLog(msg){
+  const el=document.getElementById('syncLog');
+  if(!el)return;
+  el.style.display='block';
+  const now=new Date().toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+  el.innerHTML=`[${now}] ${msg}<br>`+el.innerHTML;
+}
+
+async function connectSheets(){
+  const url=document.getElementById('sheetsUrl')?.value.trim();
+  if(!url){toast('Paste your Apps Script URL first');return;}
+  setSheetsUrl(url);
+  updateSheetsBadge(false,'Testing...');
+  syncLog('Testing connection...');
+  const result=await pullFromSheets();
+  if(result){
+    updateSheetsBadge(true,'Connected');
+    syncLog('Connection successful — data pulled from Sheets');
+    toast('Connected to Google Sheets!');
+    D=result; renderSec('meta');
+  } else {
+    updateSheetsBadge(false,'Connection failed');
+    syncLog('Could not connect — check URL and sharing settings');
+    toast('Connection failed — check the Setup Guide');
+  }
+}
+
+async function pushNow(){
+  const url=getSheetsUrl();
+  if(!url){toast('Connect to Google Sheets first');return;}
+  syncLog('Pushing data to Sheets...');
+  const r=await pushToSheets(D);
+  if(r.ok){ syncLog('Push successful: '+r.msg); toast('Pushed to Sheets!'); }
+  else     { syncLog('Push failed: '+r.msg);    toast('Push failed: '+r.msg); }
+}
+
+async function pullNow(){
+  const url=getSheetsUrl();
+  if(!url){toast('Connect to Google Sheets first');return;}
+  syncLog('Pulling data from Sheets...');
+  const result=await pullFromSheets();
+  if(result){ D=result; syncLog('Pull successful'); toast('Data pulled from Sheets!'); renderSec('meta'); }
+  else       { syncLog('Pull failed — using local data'); toast('Pull failed — using local data'); }
+}
+
+// persist() already handles Sheets auto-push — see definition above
+</script>
+</body>
+</html>

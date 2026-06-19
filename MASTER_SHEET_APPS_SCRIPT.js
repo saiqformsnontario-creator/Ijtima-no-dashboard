@@ -12,6 +12,7 @@
 const REGISTRATION_SHEET_ID = "1rstkVnmEl8w1w_5lccfNzU4U68f5dTvMLBqpwBzLzKY";
 const EDUCATION_RESULTS_SHEET_ID = "PASTE_EDUCATION_RESULTS_SHEET_ID";
 const SPORTS_RESULTS_SHEET_ID = "PASTE_SPORTS_RESULTS_SHEET_ID";
+const FORM_URL = "";
 
 const MAJALIS = [
   "Barrie South",
@@ -193,6 +194,10 @@ function doGet(e) {
     return jsonResponse(getBootstrapPayload());
   }
 
+  if (action === "avConfig") {
+    return jsonResponse({ status: "ok", config: loadAvConfig(SpreadsheetApp.getActiveSpreadsheet()) });
+  }
+
   return jsonResponse({ error: "Unknown action." });
 }
 
@@ -268,6 +273,22 @@ function doPost(e) {
     return jsonResponse(removeSportsRosterParticipant(body.payload));
   }
 
+  if (action === "getMembers") {
+    return jsonResponse({ status: "ok", members: getMasterMembersForAdmin(SpreadsheetApp.getActiveSpreadsheet()) });
+  }
+
+  if (action === "addMasterMember") {
+    return jsonResponse(addMasterMember(body.payload));
+  }
+
+  if (action === "bulkAddMasterMembers") {
+    return jsonResponse(bulkAddMasterMembers(body.payload));
+  }
+
+  if (action === "avConfigSave") {
+    return jsonResponse(saveAvConfig(body.payload));
+  }
+
   return jsonResponse({ error: "Unknown action." });
 }
 
@@ -279,16 +300,18 @@ function getBootstrapPayload() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const masterMembers = normalizeMasterMembers(rowsToObjects(spreadsheet.getSheetByName("Master Members").getDataRange().getValues()));
   const registrations = normalizeMembers(rowsToObjects(spreadsheet.getSheetByName("Members").getDataRange().getValues()));
+  const attendanceRows = rowsToObjects(spreadsheet.getSheetByName("Attendance").getDataRange().getValues());
 
   return {
     majalis: MAJALIS,
+    formUrl: FORM_URL,
     users: rowsToObjects(spreadsheet.getSheetByName("Users").getDataRange().getValues()),
     scheduleItems: rowsToObjects(spreadsheet.getSheetByName("Schedule").getDataRange().getValues()),
     announcements: rowsToObjects(spreadsheet.getSheetByName("Announcements").getDataRange().getValues()),
     masterMemberRecords: masterMembers,
     registrationRecords: registrations,
-    memberRecords: mergeMasterAndRegistrations(masterMembers, registrations),
-    attendanceRecords: rowsToObjects(spreadsheet.getSheetByName("Attendance").getDataRange().getValues()),
+    memberRecords: mergeAttendance(mergeMasterAndRegistrations(masterMembers, registrations), attendanceRows),
+    attendanceRecords: attendanceRows,
     competitionResults: rowsToObjects(spreadsheet.getSheetByName("Competition Results").getDataRange().getValues()),
     majlisRankings: normalizeRankings(rowsToObjects(spreadsheet.getSheetByName("Majlis Rankings").getDataRange().getValues())),
     educationJudgeResults: getOptionalRows(spreadsheet, "Education Judge Results"),
@@ -296,6 +319,29 @@ function getBootstrapPayload() {
     sportsCompetitionRosters: getSportsCompetitionRosters(spreadsheet),
     sportsPostedResults: getOptionalRows(spreadsheet, "Sports Posted Results"),
   };
+}
+
+function mergeAttendance(members, attendanceRows) {
+  const attendanceByCode = {};
+  attendanceRows.forEach((row) => {
+    attendanceByCode[String(row.code || "").trim()] = row;
+  });
+
+  return members.map((member) => {
+    const attendance = attendanceByCode[String(member.code || "").trim()];
+    if (!attendance) {
+      return member;
+    }
+    return { ...member, attended: true, checkIn: attendance.checkIn || member.checkIn || "" };
+  });
+}
+
+function buildMajlisIdMap() {
+  const map = {};
+  MAJALIS.forEach((majlis, index) => {
+    map[majlis] = "h" + index;
+  });
+  return map;
 }
 
 function rowsToObjects(values) {
@@ -807,4 +853,87 @@ function upsertRow(sheet, payload, keyFields, rowValues) {
   } else {
     sheet.appendRow(rowValues);
   }
+}
+
+// ── AV Display admin panel: Master Members CRUD ─────────────────
+function getMasterMembersForAdmin(spreadsheet) {
+  const majlisIdMap = buildMajlisIdMap();
+  const masterMembers = normalizeMasterMembers(rowsToObjects(spreadsheet.getSheetByName("Master Members").getDataRange().getValues()));
+  const registrations = normalizeMembers(rowsToObjects(spreadsheet.getSheetByName("Members").getDataRange().getValues()));
+  const attendanceRows = rowsToObjects(spreadsheet.getSheetByName("Attendance").getDataRange().getValues());
+  const merged = mergeAttendance(mergeMasterAndRegistrations(masterMembers, registrations), attendanceRows);
+
+  return merged.map((member) => ({
+    memberId: String(member.code || ""),
+    name: String(member.name || ""),
+    majlisId: majlisIdMap[member.majlis] || "",
+    majlisName: String(member.majlis || ""),
+    phone: member.phone || "",
+    registered: Boolean(member.registered),
+    checkedIn: Boolean(member.attended),
+    checkInTime: member.checkIn || "",
+  }));
+}
+
+function addMasterMember(payload) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Master Members");
+  const memberId = String(payload.memberId || "").trim();
+  const name = String(payload.name || "").trim();
+
+  if (!memberId || !name) {
+    return { status: "error", message: "Member ID and name are required." };
+  }
+
+  upsertRow(sheet, { code: memberId }, ["code"], [memberId, name, payload.majlisName || "", payload.phone || ""]);
+
+  return { status: "ok", message: `${name} added to the database.` };
+}
+
+function bulkAddMasterMembers(payload) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Master Members");
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  let added = 0;
+
+  rows.forEach((row) => {
+    const memberId = String(row.memberId || "").trim();
+    const name = String(row.name || "").trim();
+
+    if (!memberId || !name) {
+      return;
+    }
+
+    upsertRow(sheet, { code: memberId }, ["code"], [memberId, name, row.majlisName || "", row.phone || ""]);
+    added += 1;
+  });
+
+  return { status: "ok", message: `${added} member${added === 1 ? "" : "s"} imported.` };
+}
+
+// ── AV Display admin panel: content config (event info, schedule, competitions, branding) ──
+function loadAvConfig(spreadsheet) {
+  const sheet = spreadsheet.getSheetByName("AV Config");
+
+  if (!sheet) {
+    return null;
+  }
+
+  const values = sheet.getDataRange().getValues();
+  const row = values.find((r) => r[0] === "content");
+
+  if (!row || !row[1]) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(row[1]);
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveAvConfig(payload) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ensureTab(spreadsheet, "AV Config", ["key", "value"]);
+  upsertRow(sheet, { key: "content" }, ["key"], ["content", JSON.stringify(payload || {})]);
+  return { status: "ok", message: "AV display config saved." };
 }
