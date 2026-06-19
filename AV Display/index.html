@@ -437,8 +437,7 @@ function rAttend(){
   const totR=D.majalis.reduce((a,m)=>a+m.registered,0),totP=D.majalis.reduce((a,m)=>a+m.present,0);
   const pct=totR?Math.round(totP/totR*100):0,totE=D.competitions.reduce((a,c)=>a+c.entries.length,0);
   document.getElementById('srow').innerHTML=[{l:'Total Tajnid',v:totR,s:`${D.majalis.length} Majalis`},{l:'Present Today',v:totP,s:`${pct}% attendance`},{l:'Competition Entries',v:totE,s:`${D.competitions.length} events`}].map(x=>`<div class="scard"><div class="sc-lbl">${x.l}</div><div class="sc-num" data-t="${x.v}">0</div><div class="sc-sub">${x.s}</div></div>`).join('');
-  const mx=Math.max(...D.majalis.map(m=>m.registered),1);
-  const rows=D.majalis.map(m=>`<div class="brow"><div class="bn">${m.name}</div><div class="bt"><div class="bf" data-w="${Math.round(m.registered/mx*100)}" style="background:linear-gradient(90deg,${m.color}77,${m.color})"></div></div><div class="bv">${m.present}/${m.registered}</div><div class="bp">${m.registered?Math.round(m.present/m.registered*100):0}%</div></div>`).join('');
+  const rows=D.majalis.map(m=>`<div class="brow"><div class="bn">${m.name}</div><div class="bt"><div class="bf" data-w="${m.registered?Math.round(m.present/m.registered*100):0}" style="background:linear-gradient(90deg,${m.color}77,${m.color})"></div></div><div class="bv">${m.present}/${m.registered}</div><div class="bp">${m.registered?Math.round(m.present/m.registered*100):0}%</div></div>`).join('');
   const bc=document.getElementById('bcard');
   bc.innerHTML=`<div id="atttrack" style="display:flex;flex-direction:column;gap:16px">${rows}</div>`;
   bc.style.justifyContent='flex-start';
