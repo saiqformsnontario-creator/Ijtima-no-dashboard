@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Northern Ontario Region Ijtima</title>
+    <link rel="preload" href="styles.css?v=7" as="style" />
+    <link rel="preload" href="app.js?v=7" as="script" />
+    <link rel="stylesheet" href="styles.css?v=7" />
+  </head>
+  <body>
+    <section class="login-screen is-hidden" id="loginScreen" aria-modal="true" role="dialog" aria-labelledby="loginTitle">
+      <form class="login-card" id="loginForm">
+        <button class="icon-button close-login" id="closeLoginButton" type="button" aria-label="Close login">X</button>
+
+        <div class="brand login-brand">
+          <img class="brand-mark" src="/logo.png" alt="Northern Ontario Region Ijtima" />
+          <div>
+            <strong>Northern Ontario Region Ijtima</strong>
+            <span>Authorized access</span>
+          </div>
+        </div>
+
+        <div>
+          <p class="eyebrow">Sign in</p>
+          <h1 id="loginTitle">Authorized Access</h1>
+        </div>
+
+        <label class="field">
+          <span>Username</span>
+          <input id="usernameInput" name="username" autocomplete="username" required />
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input id="passwordInput" name="password" type="password" autocomplete="current-password" required />
+        </label>
+
+        <p class="login-error" id="loginError" role="alert"></p>
+
+        <button class="primary-button" type="submit">Sign in</button>
+
+      </form>
+    </section>
+
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+        <div class="sidebar-header">
+          <div class="brand">
+            <img class="brand-mark" src="/logo.png" alt="Northern Ontario Region Ijtima" />
+            <div class="brand-copy">
+              <strong>Northern Ontario Region Ijtima</strong>
+            </div>
+          </div>
+          <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close menu">&#x2715;</button>
+        </div>
+
+        <nav class="nav-list" id="navList"></nav>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+              <span></span><span></span><span></span>
+            </button>
+            <h1 id="pageTitle">Public Dashboard</h1>
+          </div>
+
+          <div class="session-box">
+            <div class="session-info">
+              <div>
+                <span id="sessionLabel">Public view</span>
+                <strong id="signedInUser">General User</strong>
+              </div>
+              <button class="primary-button compact" id="loginButton" type="button">Login</button>
+              <button class="secondary-button" id="logoutButton" type="button">Logout</button>
+            </div>
+            <img class="topbar-logo" src="/logo.png" alt="Northern Ontario Region Ijtima" />
+          </div>
+        </header>
+
+        <section class="dashboard-grid" id="dashboardGrid"></section>
+      </main>
+    </div>
+
+    <script src="app.js?v=7" defer></script>
+  </body>
+</html>
