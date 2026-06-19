@@ -30,7 +30,7 @@ date | start | end | title | location | lead | status
 5. Replace these constants at the top:
 
 ```javascript
-const REGISTRATION_SHEET_ID = "PASTE_REGISTRATION_FORM_RESPONSE_SHEET_ID";
+const REGISTRATION_SHEET_ID = "1rstkVnmEl8w1w_5lccfNzU4U68f5dTvMLBqpwBzLzKY"; // "Form Responses 1" tab
 const EDUCATION_RESULTS_SHEET_ID = "PASTE_EDUCATION_RESULTS_SHEET_ID";
 const SPORTS_RESULTS_SHEET_ID = "PASTE_SPORTS_RESULTS_SHEET_ID";
 ```
@@ -50,12 +50,15 @@ GOOGLE_SPREADSHEET_ID=your_master_sheet_id
 
 ## Expected External Sheet Shapes
 
-Registration form response sheet should expose:
+The Registration Sheet's `Form Responses 1` tab should expose:
 
 ```text
-Col2 = member code
-Col3 = name
-Col4 = majlis
+Col1 (A) = timestamp
+Col2 (B) = full name
+Col3 (C) = member code
+Col4 (D) = cell phone
+Col5 (E) = email
+Col6 (F) = majlis
 ```
 
 Education and sports result sheets should each have a `Results` tab:
