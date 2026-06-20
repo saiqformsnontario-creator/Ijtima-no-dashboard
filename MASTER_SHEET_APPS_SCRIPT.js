@@ -31,6 +31,7 @@ function setupMasterDashboardSheet() {
   setupTab(spreadsheet, "Members", ["code", "name", "majlis", "registered", "attended", "checkIn"]);
   setupTab(spreadsheet, "Attendance", ["code", "name", "majlis", "checkIn", "checkedInBy"]);
   setupTab(spreadsheet, "Competition Results", ["category", "competition", "position", "name", "majlis", "points"]);
+  setupTab(spreadsheet, "Competitions", ["id", "name", "category", "type"]);
   setupTab(spreadsheet, "Majlis Rankings", ["majlis", "attendance", "education", "sports", "total", "rank"]);
   setupTab(spreadsheet, "Education Competition Rosters", ["competition", "name", "code", "majlis"]);
   setupTab(spreadsheet, "Sports Competition Rosters", ["sport", "position", "name", "code", "majlis"]);
@@ -289,6 +290,18 @@ function doPost(e) {
     return jsonResponse(saveAvConfig(body.payload));
   }
 
+  if (action === "addCompetition") {
+    return jsonResponse(addCompetition(body.payload));
+  }
+
+  if (action === "deleteCompetition") {
+    return jsonResponse(deleteCompetition(body.payload));
+  }
+
+  if (action === "saveCompetitionFinals") {
+    return jsonResponse(saveCompetitionFinals(body.payload));
+  }
+
   return jsonResponse({ error: "Unknown action." });
 }
 
@@ -313,6 +326,7 @@ function getBootstrapPayload() {
     memberRecords: mergeAttendance(mergeMasterAndRegistrations(masterMembers, registrations), attendanceRows),
     attendanceRecords: attendanceRows,
     competitionResults: rowsToObjects(spreadsheet.getSheetByName("Competition Results").getDataRange().getValues()),
+    competitionsList: getOptionalRows(spreadsheet, "Competitions"),
     majlisRankings: normalizeRankings(rowsToObjects(spreadsheet.getSheetByName("Majlis Rankings").getDataRange().getValues())),
     educationJudgeResults: getOptionalRows(spreadsheet, "Education Judge Results"),
     educationCompetitionRosters: getEducationCompetitionRosters(spreadsheet),
@@ -943,4 +957,79 @@ function saveAvConfig(payload) {
   const sheet = ensureTab(spreadsheet, "AV Config", ["key", "value"]);
   upsertRow(sheet, { key: "content" }, ["key"], ["content", JSON.stringify(payload || {})]);
   return { status: "ok", message: "AV display config saved." };
+}
+
+// ── Competitions list + Final Positions (writes the real "Competition Results" rows) ──
+const FINAL_POSITION_POINTS = { "1st": 10, "2nd": 7, "3rd": 5 };
+
+function addCompetition(payload) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ensureTab(spreadsheet, "Competitions", ["id", "name", "category", "type"]);
+  sheet.appendRow([payload.id, payload.name, payload.category || "Education", payload.type || "Individual"]);
+  return { competitionsList: rowsToObjects(sheet.getDataRange().getValues()) };
+}
+
+function deleteCompetition(payload) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ensureTab(spreadsheet, "Competitions", ["id", "name", "category", "type"]);
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0];
+  const idIndex = headers.indexOf("id");
+
+  for (let index = values.length - 1; index >= 1; index -= 1) {
+    if (String(values[index][idIndex]) === String(payload.id)) {
+      sheet.deleteRow(index + 1);
+    }
+  }
+
+  if (payload.name) {
+    removeCompetitionResultRows(spreadsheet, payload.name);
+  }
+
+  return {
+    competitionsList: rowsToObjects(sheet.getDataRange().getValues()),
+    competitionResults: rowsToObjects(spreadsheet.getSheetByName("Competition Results").getDataRange().getValues()),
+  };
+}
+
+function removeCompetitionResultRows(spreadsheet, competitionName) {
+  const sheet = spreadsheet.getSheetByName("Competition Results");
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0];
+  const competitionIndex = headers.indexOf("competition");
+  const target = String(competitionName || "").trim().toLowerCase();
+
+  for (let index = values.length - 1; index >= 1; index -= 1) {
+    if (String(values[index][competitionIndex] || "").trim().toLowerCase() === target) {
+      sheet.deleteRow(index + 1);
+    }
+  }
+}
+
+function saveCompetitionFinals(payload) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getSheetByName("Competition Results");
+  const competition = String(payload.competition || "").trim();
+  const category = String(payload.category || "Education").trim();
+  const slots = Array.isArray(payload.slots) ? payload.slots : [];
+
+  removeCompetitionResultRows(spreadsheet, competition);
+
+  const rows = [];
+  slots.forEach((slot) => {
+    const members = (Array.isArray(slot.members) ? slot.members : []).filter((m) => String(m.name || "").trim());
+    if (!members.length) {
+      return;
+    }
+    const points = FINAL_POSITION_POINTS[slot.rank] || 0;
+    const name = members.map((m) => m.name).join(", ");
+    const majlis = members[0].majlis || "";
+    rows.push([category, competition, slot.rank, name, majlis, points]);
+  });
+
+  if (rows.length) {
+    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
+  }
+
+  return { competitionResults: rowsToObjects(sheet.getDataRange().getValues()) };
 }

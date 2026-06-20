@@ -885,6 +885,14 @@ async function handleApi(request, response, url) {
       category: String(body.category || "Education").trim(),
       type: String(body.type || "Individual").trim(),
     };
+
+    if (isAppsScriptConfigured()) {
+      const data = await appsScriptRequest("addCompetition", competition);
+      invalidateBootstrapCache();
+      sendJson(response, 200, { competitionsList: data.competitionsList || [competition], addedId: id });
+      return true;
+    }
+
     competitionsList.push(competition);
     sendJson(response, 200, { competitionsList, addedId: id });
     return true;
@@ -893,6 +901,16 @@ async function handleApi(request, response, url) {
   if (request.method === "POST" && requestPath === "/api/competitions/delete") {
     const body = await readJson(request);
     const id = String(body.id || "").trim();
+
+    if (isAppsScriptConfigured()) {
+      const bootstrap = await bootstrapPayload();
+      const comp = (bootstrap.competitionsList || []).find((c) => c.id === id);
+      const data = await appsScriptRequest("deleteCompetition", { id, name: comp?.name || "" });
+      invalidateBootstrapCache();
+      sendJson(response, 200, { competitionsList: data.competitionsList || [], competitionFinals: [] });
+      return true;
+    }
+
     const idx = competitionsList.findIndex((c) => c.id === id);
     if (idx >= 0) competitionsList.splice(idx, 1);
     const kept = competitionFinals.filter((f) => f.competitionId !== id);
@@ -909,8 +927,46 @@ async function handleApi(request, response, url) {
       sendError(response, 400, "Competition ID is required.");
       return true;
     }
-    const comp = competitionsList.find((c) => c.id === competitionId);
     const slots = Array.isArray(body.slots) ? body.slots : [];
+
+    if (isAppsScriptConfigured()) {
+      const bootstrap = await bootstrapPayload();
+      const comp = (bootstrap.competitionsList || []).find((c) => c.id === competitionId);
+      const data = await appsScriptRequest("saveCompetitionFinals", {
+        competition: comp?.name || competitionId,
+        category: comp?.category || "Education",
+        slots,
+      });
+      invalidateBootstrapCache();
+
+      const kept = competitionFinals.filter((f) => f.competitionId !== competitionId);
+      slots.forEach((slot, slotIdx) => {
+        const members = (Array.isArray(slot.members) ? slot.members : [])
+          .filter((m) => String(m.name || "").trim() || String(m.code || "").trim())
+          .map((m) => ({
+            code: String(m.code || "").trim(),
+            name: String(m.name || "").trim(),
+            majlis: String(m.majlis || "").trim(),
+          }));
+        if (members.length) {
+          kept.push({
+            id: `f${competitionId}-${slotIdx}-${Date.now().toString(36)}`,
+            competitionId,
+            competition: comp?.name || competitionId,
+            category: comp?.category || "Education",
+            rank: String(slot.rank || "1st").trim(),
+            members,
+          });
+        }
+      });
+      competitionFinals.length = 0;
+      kept.forEach((f) => competitionFinals.push(f));
+
+      sendJson(response, 200, { competitionFinals, competitionResults: data.competitionResults });
+      return true;
+    }
+
+    const comp = competitionsList.find((c) => c.id === competitionId);
     const kept = competitionFinals.filter((f) => f.competitionId !== competitionId);
     slots.forEach((slot, slotIdx) => {
       const members = (Array.isArray(slot.members) ? slot.members : [])
