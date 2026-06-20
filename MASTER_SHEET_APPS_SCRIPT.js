@@ -442,7 +442,7 @@ function mergeMasterAndRegistrations(masterMembers, registrations) {
 
 function normalizeRankings(rows) {
   return rows.map((row) => ({
-    majlis: row.majlis,
+    majlis: row.majlis || row.Majlis || row.halqa || row.Halqa || "",
     attendance: Number(row.attendance) || 0,
     education: Number(row.education) || 0,
     sports: Number(row.sports) || 0,
