@@ -357,11 +357,18 @@ function rowsToObjects(values) {
     .map((row, index) => {
       const item = {};
       headers.forEach((header, index) => {
-        item[header] = row[index];
+        item[header] = formatCellValue(row[index]);
       });
       item._rowNumber = index + 2;
       return item;
     });
+}
+
+function formatCellValue(value) {
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), "hh:mm a");
+  }
+  return value;
 }
 
 function getOptionalRows(spreadsheet, sheetName) {
